@@ -15,9 +15,11 @@ instance/
 .webassets-cache
 
 # Database
-*.db
-*.sqlite
-*.sqlite3
+# *.db
+# *.sqlite
+# *.sqlite3
+# Uncomment the above lines if you want to ignore database files
+# For this project, we're including the database.db file
 
 # Logs
 *.log
