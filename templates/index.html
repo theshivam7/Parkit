@@ -1,0 +1,241 @@
+{% extends "base.html" %}
+
+{% block title %}Parkit - Smart Parking Management{% endblock %}
+
+{% block content %}
+<section class="hero-section">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-6 hero-content">
+                <h1 class="hero-title">
+                    Smart Parking<br>
+                    <span class="text-warning">Simplified</span>
+                </h1>
+                <p class="hero-subtitle">
+                    Experience hassle-free parking with our intelligent system. 
+                    Reserve, park, and manage spaces effortlessly with real-time 
+                    updates and seamless user experience.
+                </p>
+                <div class="d-flex gap-3 flex-wrap">
+                    <a href="{{ url_for('register') }}" class="btn btn-light btn-lg" 
+                       aria-label="Get started with Parkit">
+                        <i class="bi bi-person-plus me-2" aria-hidden="true"></i>Get Started
+                    </a>
+                    <a href="#features" class="btn btn-outline-light btn-lg" 
+                       aria-label="Learn more about Parkit features">
+                        <i class="bi bi-play-circle me-2" aria-hidden="true"></i>Learn More
+                    </a>
+                </div>
+            </div>
+            <div class="col-lg-6 text-center">
+                <div class="parking-demo p-4">
+                    <div class="card shadow-lg border-0">
+                        <div class="card-body p-4">
+                            <div class="d-flex justify-content-between mb-3">
+                                <span class="badge bg-success">Available</span>
+                                <span class="badge bg-primary">Premium</span>
+                                <span class="badge bg-secondary">Reserved</span>
+                            </div>
+                            <h6 class="card-title text-dark fw-bold">Premium Parking Lot</h6>
+                            <p class="card-text text-muted small">Downtown Location • ₹50/hour</p>
+                            <div class="progress mb-2" style="height: 8px;" role="progressbar" 
+                                 aria-valuenow="60" aria-valuemin="0" aria-valuemax="100" 
+                                 aria-label="Parking lot occupancy">
+                                <div class="progress-bar bg-success" style="width: 60%"></div>
+                            </div>
+                            <small class="text-muted">15 of 25 spots available</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section id="features" class="py-5" aria-labelledby="features-heading">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2 id="features-heading" class="fw-bold mb-3">Why Choose Parkit?</h2>
+            <p class="text-muted lead">
+                Experience the future of parking management with our comprehensive 
+                suite of features designed for both users and administrators.
+            </p>
+        </div>
+        
+        <div class="row g-4">
+            <div class="col-md-6 col-lg-3">
+                <article class="card h-100 text-center border-0 shadow-sm">
+                    <div class="card-body p-4">
+                        <div class="feature-icon bg-primary text-white rounded-circle d-flex 
+                                    align-items-center justify-content-center mx-auto mb-3" 
+                             style="width: 80px; height: 80px;">
+                            <i class="bi bi-clock-fill fs-2" aria-hidden="true"></i>
+                        </div>
+                        <h3 class="card-title fw-bold h5">Real-time Status</h3>
+                        <p class="card-text text-muted">
+                            See available spots instantly with live updates across all parking locations.
+                        </p>
+                    </div>
+                </article>
+            </div>
+            
+            <div class="col-md-6 col-lg-3">
+                <article class="card h-100 text-center border-0 shadow-sm">
+                    <div class="card-body p-4">
+                        <div class="feature-icon bg-success text-white rounded-circle d-flex 
+                                    align-items-center justify-content-center mx-auto mb-3" 
+                             style="width: 80px; height: 80px;">
+                            <i class="bi bi-geo-alt-fill fs-2" aria-hidden="true"></i>
+                        </div>
+                        <h3 class="card-title fw-bold h5">Auto-assigned Spots</h3>
+                        <p class="card-text text-muted">
+                            No hassle choosing spots. Our system automatically assigns 
+                            the best available space.
+                        </p>
+                    </div>
+                </article>
+            </div>
+            
+            <div class="col-md-6 col-lg-3">
+                <article class="card h-100 text-center border-0 shadow-sm">
+                    <div class="card-body p-4">
+                        <div class="feature-icon bg-warning text-white rounded-circle d-flex 
+                                    align-items-center justify-content-center mx-auto mb-3" 
+                             style="width: 80px; height: 80px;">
+                            <i class="bi bi-bar-chart-fill fs-2" aria-hidden="true"></i>
+                        </div>
+                        <h3 class="card-title fw-bold h5">Admin Dashboard</h3>
+                        <p class="card-text text-muted">
+                            Complete management tools for parking lots, users, 
+                            and comprehensive analytics.
+                        </p>
+                    </div>
+                </article>
+            </div>
+            
+            <div class="col-md-6 col-lg-3">
+                <article class="card h-100 text-center border-0 shadow-sm">
+                    <div class="card-body p-4">
+                        <div class="feature-icon bg-info text-white rounded-circle d-flex 
+                                    align-items-center justify-content-center mx-auto mb-3" 
+                             style="width: 80px; height: 80px;">
+                            <i class="bi bi-person-fill fs-2" aria-hidden="true"></i>
+                        </div>
+                        <h3 class="card-title fw-bold h5">Reservation History</h3>
+                        <p class="card-text text-muted">
+                            Track your parking history, costs, and generate reports 
+                            for your records.
+                        </p>
+                    </div>
+                </article>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="py-5 bg-light" aria-labelledby="how-it-works-heading">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2 id="how-it-works-heading" class="fw-bold mb-3">How It Works</h2>
+            <p class="text-muted lead">Get started with Parkit in just three simple steps</p>
+        </div>
+        
+        <div class="row g-4">
+            <div class="col-md-4">
+                <article class="text-center">
+                    <div class="step-icon bg-primary text-white rounded-circle d-flex 
+                                align-items-center justify-content-center mx-auto mb-3" 
+                         style="width: 80px; height: 80px;">
+                        <span class="fs-2 fw-bold">1</span>
+                    </div>
+                    <h3 class="fw-bold h5">Register & Login</h3>
+                    <p class="text-muted">
+                        Create your account and log in to access our parking management system.
+                    </p>
+                </article>
+            </div>
+            
+            <div class="col-md-4">
+                <article class="text-center">
+                    <div class="step-icon bg-primary text-white rounded-circle d-flex 
+                                align-items-center justify-content-center mx-auto mb-3" 
+                         style="width: 80px; height: 80px;">
+                        <span class="fs-2 fw-bold">2</span>
+                    </div>
+                    <h3 class="fw-bold h5">Choose Parking Lot</h3>
+                    <p class="text-muted">
+                        Browse available parking lots and select the one that suits your needs.
+                    </p>
+                </article>
+            </div>
+            
+            <div class="col-md-4">
+                <article class="text-center">
+                    <div class="step-icon bg-primary text-white rounded-circle d-flex 
+                                align-items-center justify-content-center mx-auto mb-3" 
+                         style="width: 80px; height: 80px;">
+                        <span class="fs-2 fw-bold">3</span>
+                    </div>
+                    <h3 class="fw-bold h5">Park & Pay</h3>
+                    <p class="text-muted">
+                        Get assigned a spot automatically, park your vehicle, 
+                        and pay when you leave.
+                    </p>
+                </article>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="py-5" aria-labelledby="cta-heading">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8 text-center">
+                <div class="card border-0 shadow-lg">
+                    <div class="card-body p-5">
+                        <h2 id="cta-heading" class="fw-bold mb-3">Ready to Get Started?</h2>
+                        <p class="text-muted mb-4">
+                            Join thousands of users who have already simplified their 
+                            parking experience with Parkit.
+                        </p>
+                        <div class="d-flex gap-3 justify-content-center flex-wrap">
+                            <a href="{{ url_for('register') }}" class="btn btn-primary btn-lg" 
+                               aria-label="Sign up for a new account">
+                                <i class="bi bi-person-plus me-2" aria-hidden="true"></i>Sign Up Now
+                            </a>
+                            <a href="{{ url_for('login') }}" class="btn btn-outline-primary btn-lg" 
+                               aria-label="Login to existing account">
+                                <i class="bi bi-box-arrow-in-right me-2" aria-hidden="true"></i>Login
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    'use strict';
+    
+    const anchorLinks = document.querySelectorAll('a[href^="#"]');
+    
+    anchorLinks.forEach(function(anchor) {
+        anchor.addEventListener('click', function(event) {
+            event.preventDefault();
+            
+            const targetId = this.getAttribute('href');
+            const targetElement = document.querySelector(targetId);
+            
+            if (targetElement) {
+                targetElement.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start'
+                });
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

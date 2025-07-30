@@ -1,0 +1,142 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Parkit{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <header class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <div>
+                    <h1 class="fw-bold mb-1 h2">Welcome, {{ current_user.name }}!</h1>
+                    <p class="text-muted mb-0">Your personal parking dashboard</p>
+                </div>
+                <a href="{{ url_for('user_booking') }}" 
+                   class="btn btn-primary btn-lg"
+                   aria-label="Navigate to parking booking page">
+                    <i class="bi bi-calendar-plus me-1" aria-hidden="true"></i>
+                    Book Parking
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <section class="row g-4 mb-4" aria-label="Dashboard actions">
+        <div class="col-md-4">
+            <div class="user-dashboard-card user-dashboard-card--primary h-100">
+                <div class="user-dashboard-card-body text-center">
+                    <i class="bi bi-calendar-plus user-dashboard-card-icon user-dashboard-card-icon--primary mb-3" aria-hidden="true"></i>
+                    <h2 class="user-dashboard-card-title">Book Parking</h2>
+                    <p class="user-dashboard-card-text">
+                        Find and reserve a parking spot at your convenience.
+                    </p>
+                   <a href="{{ url_for('user_booking') }}"
+                   class="btn btn-primary">Book Now </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="user-dashboard-card h-100 
+                        {% if active_reservation %}user-dashboard-card--warning{% else %}user-dashboard-card--secondary{% endif %}">
+                <div class="user-dashboard-card-body text-center">
+                    <i class="bi {% if active_reservation %}bi-car-front user-dashboard-card-icon user-dashboard-card-icon--warning{% else %}bi-car-front-fill user-dashboard-card-icon user-dashboard-card-icon--secondary{% endif %} mb-3" 
+                       aria-hidden="true"></i>
+                    <h2 class="user-dashboard-card-title">Current Booking</h2>
+                    <p class="user-dashboard-card-text">
+                        {% if active_reservation %}
+                            Active reservation at <strong>{{ active_reservation.parking_lot.prime_location_name }}</strong>
+                        {% else %}
+                            No active reservations
+                        {% endif %}
+                    </p>
+                    <a href="{{ url_for('user_current') }}" 
+                       class="btn {% if active_reservation %}btn-warning{% else %}btn-secondary{% endif %}"
+                       aria-label="{% if active_reservation %}View current booking details{% else %}No active booking available{% endif %}">
+                        {% if active_reservation %}View Details{% else %}No Booking{% endif %}
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="user-dashboard-card user-dashboard-card--info h-100">
+                <div class="user-dashboard-card-body text-center">
+                    <i class="bi bi-clock-history user-dashboard-card-icon user-dashboard-card-icon--info mb-3" aria-hidden="true"></i>
+                    <h2 class="user-dashboard-card-title">Booking History</h2>
+                    <p class="user-dashboard-card-text">
+                        View your past reservations and receipts.
+                    </p>
+                    <a href="{{ url_for('user_history') }}" 
+                       class="btn btn-info"
+                       aria-label="View parking booking history">
+                        View History
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    {% if active_reservation %}
+    <section class="user-dashboard-alert user-dashboard-alert--warning" 
+             role="alert" 
+             aria-labelledby="active-reservation-heading">
+        <div class="d-flex align-items-center">
+            <div class="flex-grow-1">
+                <h3 id="active-reservation-heading" class="user-dashboard-alert-heading mb-1 h6">
+                    <i class="bi bi-exclamation-triangle me-2" aria-hidden="true"></i>
+                    Active Parking Reservation
+                </h3>
+                <p class="mb-2">
+                    You have an active reservation at 
+                    <strong>{{ active_reservation.parking_lot.prime_location_name }}</strong>
+                    since {{ active_reservation.parking_timestamp.strftime('%I:%M %p') }}.
+                </p>
+                <div class="d-flex gap-2">
+                    <a href="{{ url_for('user_current') }}" class="btn btn-sm btn-warning">
+                        <i class="bi bi-eye me-1"></i>View Details
+                    </a>
+                    <a href="{{ url_for('release_parking') }}" class="btn btn-sm btn-success">
+                        <i class="bi bi-check-circle me-1"></i>Release Parking
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+    {% endif %}
+
+    <section class="row g-4 mt-4">
+        <div class="col-md-6">
+            <div class="user-dashboard-stats-card">
+                <div class="d-flex align-items-center">
+                    <div class="user-dashboard-stats-icon user-dashboard-stats-icon--primary me-3">
+                        <i class="bi bi-calendar-check"></i>
+                    </div>
+                    <div>
+                        <h4 class="user-dashboard-stats-number mb-0">
+                            {% if active_reservation %}1{% else %}0{% endif %}
+                        </h4>
+                        <p class="user-dashboard-stats-label mb-0">Active Reservations</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="user-dashboard-stats-card">
+                <div class="d-flex align-items-center">
+                    <div class="user-dashboard-stats-icon user-dashboard-stats-icon--success me-3">
+                        <i class="bi bi-clock-history"></i>
+                    </div>
+                    <div>
+                        <h4 class="user-dashboard-stats-number mb-0">
+                            {{ current_user.reservations|length }}
+                        </h4>
+                        <p class="user-dashboard-stats-label mb-0">Total Bookings</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+{% endblock %}

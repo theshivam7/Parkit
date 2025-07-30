@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+
+{% block title %}Book Parking - Vehicle Parking App{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold">Book Parking Spot</h2>
+        <span class="badge bg-primary fs-6">{{ lots_with_stats|length }} locations available</span>
+    </div>
+    <div class="alert alert-info mb-4 shadow-sm">
+        <i class="bi bi-info-circle me-2"></i>
+        Click <b>Book Now</b> to reserve a spot. You will be asked for your name, vehicle number, and booking duration (1-24 hours).
+    </div>
+    <div class="row g-4">
+        {% for item in lots_with_stats %}
+        {% if item and item.lot and item.stats %}
+        <div class="col-lg-6">
+            <div class="card h-100 shadow border-0 fade-in-up {% if (item.stats.available or 0) == 0 %}border-danger{% elif (item.stats.available or 0) <= 5 %}border-warning{% else %}border-success{% endif %}">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <h5 class="card-title mb-0 text-primary">{{ item.lot.prime_location_name or 'Unknown Location' }}</h5>
+                        <span class="badge {% if (item.stats.available or 0) == 0 %}bg-danger{% elif (item.stats.available or 0) <= 5 %}bg-warning text-dark{% else %}bg-success{% endif %} fs-6 px-3 py-2">
+                            {{ item.stats.available or 0 }} available
+                        </span>
+                    </div>
+                    <p class="text-muted mb-3"><i class="bi bi-geo-alt me-1"></i> {{ item.lot.address or 'Address not available' }}</p>
+                    <div class="row mb-3">
+                        <div class="col-6">
+                            <small class="text-muted d-block">Price per Hour</small>
+                            <span class="fw-bold text-primary">₹{{ (item.lot.price or 0)|float }}</span>
+                        </div>
+                        <div class="col-6">
+                            <small class="text-muted d-block">PIN Code</small>
+                            <span class="fw-bold">{{ item.lot.pin_code or 'N/A' }}</span>
+                        </div>
+                    </div>
+                    <div class="d-grid gap-2 mt-3">
+                        {% if (item.stats.available or 0) > 0 %}
+                        <a href="{{ url_for('book_parking', lot_id=item.lot.id) }}" class="btn btn-primary btn-lg">
+                            <i class="bi bi-calendar-plus me-1"></i> Book Now
+                        </a>
+                        {% else %}
+                        <button class="btn btn-danger btn-lg" disabled>
+                            <i class="bi bi-x-circle me-1"></i> Fully Occupied
+                        </button>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

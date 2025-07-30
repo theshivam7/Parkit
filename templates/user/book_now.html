@@ -1,0 +1,269 @@
+{% extends "base.html" %}
+
+{% block title %}Book Parking Spot - Parkit{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-7 col-lg-6">
+            <div class="card shadow-lg border-0 fade-in-up">
+                <div class="card-header bg-primary text-white text-center">
+                    <h3 class="mb-0">Book Parking Spot</h3>
+                    <small class="text-light">
+                        {{ lot.prime_location_name or 'Unknown Location' }} &mdash; ₹{{ "%.2f"|format(lot.price|float) }}/hr
+                    </small>
+                </div>
+
+                <div class="card-body p-4">
+                    <form method="POST" action="{{ url_for('book_parking', lot_id=lot.id) }}" id="booking-form" novalidate>
+                        {{ form.hidden_tag() }}
+
+                        
+                        <div class="mb-3">
+                            {{ form.name.label(class="form-label fw-semibold") }}
+                            {{ form.name(class="form-control form-control-lg", placeholder="Enter your full name", **{"aria-describedby": "name-help"}) }}
+                            {% if form.name.errors %}
+                                {% for error in form.name.errors %}
+                                    <div class="text-danger small mt-1" role="alert">{{ error }}</div>
+                                {% endfor %}
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            {{ form.vehicle_number.label(class="form-label fw-semibold") }}
+                            {{ form.vehicle_number(class="form-control form-control-lg", placeholder="e.g., MH12AB1234", **{"aria-describedby": "vehicle-help"}) }}
+                            <small id="vehicle-help" class="form-text text-muted">
+                                Format: State(2) + Number(2) + Letters(2) + Number(4)
+                            </small>
+                            {% if form.vehicle_number.errors %}
+                                {% for error in form.vehicle_number.errors %}
+                                    <div class="text-danger small mt-1" role="alert">{{ error }}</div>
+                                {% endfor %}
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            {{ form.hours.label(class="form-label fw-semibold") }}
+                            {{ form.hours(class="form-control form-control-lg", placeholder="Number of hours (1-24)", min="1", max="24", step="1", id="hours-input", **{"aria-describedby": "hours-help"}) }}
+                            <small id="hours-help" class="form-text text-muted">
+                                Minimum 1 hour, Maximum 24 hours
+                            </small>
+                            {% if form.hours.errors %}
+                                {% for error in form.hours.errors %}
+                                    <div class="text-danger small mt-1" role="alert">{{ error }}</div>
+                                {% endfor %}
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <div class="alert alert-info" role="status" aria-live="polite">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <strong>Estimated Cost:</strong> 
+                                        <span id="estimated-cost">₹{{ "%.2f"|format(lot.price|float) }}</span>
+                                    </div>
+                                    <small class="text-muted">Rate: ₹{{ "%.2f"|format(lot.price|float) }}/hr</small>
+                                </div>
+                                <small class="text-muted d-block mt-1">
+                                    <strong>Billing Policy:</strong> You will be charged for full hours only. Exceeding your booking time by even 1 second will result in an additional full hour charge.
+                                </small>
+                            </div>
+                        </div>
+
+                        <div class="d-grid">
+                            {{ form.submit(class="btn btn-primary btn-lg", id="submit-btn") }}
+                        </div>
+                        
+
+                    </form>
+                </div>
+
+                <div class="card-footer text-center bg-light">
+                    <a href="{{ url_for('user_booking') }}" 
+                       class="btn btn-link text-decoration-none">
+                        <i class="fas fa-arrow-left me-1"></i>Back to Locations
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<noscript>
+    <style>
+        /* Ensure form works without JavaScript */
+        #submit-btn {
+            display: block !important;
+        }
+        #submit-btn:disabled {
+            pointer-events: auto !important;
+            opacity: 1 !important;
+        }
+    </style>
+</noscript>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const CONFIG = {
+        pricePerHour: parseFloat("{{ lot.price|float }}") || 0,
+        minHours: 1,
+        maxHours: 24
+    };
+
+    const elements = {
+        hoursInput: document.getElementById('hours-input'),
+        estimatedCost: document.getElementById('estimated-cost'),
+        submitBtn: document.getElementById('submit-btn'),
+        form: document.getElementById('booking-form')
+    };
+
+    if (!elements.hoursInput || !elements.estimatedCost || !elements.submitBtn || !elements.form) {
+        console.error('Required form elements not found');
+        return;
+    }
+
+    function formatCurrency(amount) {
+        return `₹${amount.toFixed(2)}`;
+    }
+
+    function validateHours(hours) {
+        return hours >= CONFIG.minHours && 
+               hours <= CONFIG.maxHours && 
+               Number.isInteger(hours);
+    }
+
+    function calculateCost(hours) {
+        return hours * CONFIG.pricePerHour;
+    }
+
+    function updateEstimatedCost() {
+        try {
+            if (!elements.hoursInput || !elements.estimatedCost) {
+                console.error('Required elements not found for cost calculation');
+                return;
+            }
+
+            const hoursValue = elements.hoursInput.value.trim();
+            
+            if (!hoursValue) {
+                elements.estimatedCost.textContent = formatCurrency(CONFIG.pricePerHour);
+                return;
+            }
+
+            const hours = parseInt(hoursValue, 10);
+            
+            if (isNaN(hours) || !validateHours(hours)) {
+                elements.estimatedCost.textContent = 'Invalid hours';
+                elements.estimatedCost.classList.add('text-danger');
+                return;
+            }
+
+            elements.estimatedCost.classList.remove('text-danger');
+            const estimatedCost = calculateCost(hours);
+            elements.estimatedCost.textContent = formatCurrency(estimatedCost);
+            
+        } catch (error) {
+            console.error('Error calculating cost:', error);
+            if (elements.estimatedCost) {
+                elements.estimatedCost.textContent = 'Calculation error';
+            }
+        }
+    }
+
+    function validateForm() {
+        try {
+            if (!elements.hoursInput || !elements.submitBtn) {
+                console.error('Required elements not found for form validation');
+                return true; // Don't block if elements are missing
+            }
+
+            const hoursValue = elements.hoursInput.value.trim();
+            
+            if (!hoursValue) {
+                elements.submitBtn.disabled = false;
+                return true;
+            }
+
+            const hours = parseInt(hoursValue, 10);
+            const isValid = !isNaN(hours) && validateHours(hours);
+            
+            elements.submitBtn.disabled = hoursValue && !isValid;
+            return isValid || !hoursValue; // Valid if valid number or empty (let server handle)
+        } catch (error) {
+            console.error('Error validating form:', error);
+            if (elements.submitBtn) {
+                elements.submitBtn.disabled = false;
+            }
+            return true;
+        }
+    }
+
+    if (elements.hoursInput) {
+        elements.hoursInput.addEventListener('input', function() {
+            try {
+                updateEstimatedCost();
+                validateForm();
+            } catch (error) {
+                console.error('Error in input event:', error);
+            }
+        });
+
+        elements.hoursInput.addEventListener('blur', function() {
+            try {
+                const hours = parseInt(this.value, 10);
+                if (!isNaN(hours)) {
+                    if (hours < CONFIG.minHours) {
+                        this.value = CONFIG.minHours;
+                    } else if (hours > CONFIG.maxHours) {
+                        this.value = CONFIG.maxHours;
+                    }
+                    updateEstimatedCost();
+                }
+            } catch (error) {
+                console.error('Error in blur event:', error);
+            }
+        });
+    }
+
+    if (elements.form) {
+        elements.form.addEventListener('submit', function(e) {
+            try {
+                if (elements.hoursInput && elements.hoursInput.value) {
+                    const hours = parseInt(elements.hoursInput.value, 10);
+                    if (isNaN(hours) || hours < CONFIG.minHours || hours > CONFIG.maxHours) {
+                        e.preventDefault();
+                        alert('Please enter valid parking duration (1-24 hours).');
+                        return;
+                    }
+                }
+            } catch (error) {
+                console.error('Error in form submission:', error);
+                console.log('Allowing form submission despite JavaScript error');
+            }
+        });
+    }
+
+    try {
+        if (elements.hoursInput && !elements.hoursInput.value) {
+            elements.hoursInput.value = CONFIG.minHours;
+        }
+        updateEstimatedCost();
+        validateForm();
+        
+        setTimeout(function() {
+            if (elements.submitBtn && elements.submitBtn.disabled) {
+                console.log('Re-enabling submit button as fallback');
+                elements.submitBtn.disabled = false;
+            }
+        }, 1000);
+        
+    } catch (error) {
+        console.error('Error during initialization:', error);
+        if (elements.submitBtn) {
+            elements.submitBtn.disabled = false;
+        }
+    }
+});
+</script>
+{% endblock %}

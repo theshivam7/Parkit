@@ -1,0 +1,302 @@
+{% extends "base.html" %}
+
+{% block title %}Reservations & Statistics - Parkit{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="fw-bold mb-2">Reservations & Statistics</h1>
+            <p class="text-muted mb-0">Comprehensive overview of all parking reservations and system analytics.</p>
+        </div>
+        <div class="d-flex gap-2">
+            <button class="btn btn-outline-primary" onclick="exportData()">
+                <i class="bi bi-download me-2"></i>Export Data
+            </button>
+            <button class="btn btn-primary" onclick="refreshData()">
+                <i class="bi bi-arrow-clockwise me-2"></i>Refresh
+            </button>
+        </div>
+    </div>
+
+    <div class="row g-4 mb-4">
+        <div class="col-lg-3 col-md-6">
+            <div class="stats-card fade-in-up">
+                <div class="stats-icon primary">
+                    <i class="bi bi-clock"></i>
+                </div>
+                <div class="stats-number">{{ reservations|length }}</div>
+                <div class="stats-label">Total Reservations</div>
+            </div>
+        </div>
+        
+        <div class="col-lg-3 col-md-6">
+            <div class="stats-card fade-in-up" style="animation-delay: 0.1s;">
+                <div class="stats-icon success">
+                    <i class="bi bi-check-circle"></i>
+                </div>
+                <div class="stats-number">{{ reservations|selectattr('status', 'equalto', 'completed')|list|length }}</div>
+                <div class="stats-label">Completed</div>
+            </div>
+        </div>
+        
+        <div class="col-lg-3 col-md-6">
+            <div class="stats-card fade-in-up" style="animation-delay: 0.2s;">
+                <div class="stats-icon warning">
+                    <i class="bi bi-play-circle"></i>
+                </div>
+                <div class="stats-number">{{ reservations|selectattr('status', 'equalto', 'active')|list|length }}</div>
+                <div class="stats-label">Active</div>
+            </div>
+        </div>
+        
+        <div class="col-lg-3 col-md-6">
+            <div class="stats-card fade-in-up" style="animation-delay: 0.3s;">
+                <div class="stats-icon danger">
+                    <i class="bi bi-currency-dollar"></i>
+                </div>
+                <div class="stats-number">₹{{ "%.2f"|format(reservations|selectattr('total_cost')|selectattr('total_cost', 'ge', 0)|sum(attribute='total_cost') or 0) }}</div>
+                <div class="stats-label">Total Revenue</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card fade-in-up" style="animation-delay: 0.4s;">
+        <div class="card-header">
+            <h5 class="mb-0"><i class="bi bi-table me-2"></i>All Reservations</h5>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead>
+                        <tr>
+                            <th>User</th>
+                            <th>Parking Lot</th>
+                            <th>Spot</th>
+                            <th>Status</th>
+                            <th>Start Time</th>
+                            <th>End Time</th>
+                            <th>Duration</th>
+                            <th>Cost</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for reservation in reservations %}
+                        <tr>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 32px; height: 32px;">
+                                        <span class="fw-bold text-uppercase">{{ reservation.name[0] if reservation.name else 'U' }}</span>
+                                    </div>
+                                    <div>
+                                        <h6 class="mb-0">{{ reservation.name or 'Unknown' }}</h6>
+                                        <small class="text-muted">{{ reservation.email or 'No email' }}</small>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <strong>{{ reservation.parking_lot.prime_location_name or 'Unknown Lot' }}</strong>
+                                <br>
+                                <small class="text-muted">{{ reservation.parking_lot.address or 'No address' }}</small>
+                            </td>
+                            <td>
+                                <span class="badge bg-secondary">Spot #{{ reservation.parking_spot.spot_number or 'N/A' }}</span>
+                            </td>
+                            <td>
+                                {% if reservation.status == 'active' %}
+                                    <span class="badge bg-success">Active</span>
+                                {% elif reservation.status == 'completed' %}
+                                    <span class="badge bg-primary">Completed</span>
+                                {% else %}
+                                    <span class="badge bg-warning">{{ reservation.status|title }}</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <small class="text-muted">
+                                    {% if reservation.parking_timestamp %}
+                                        {% if reservation.parking_timestamp is string %}
+                                            {{ reservation.parking_timestamp.split('T')[0] if 'T' in reservation.parking_timestamp else reservation.parking_timestamp }}
+                                            {% if 'T' in reservation.parking_timestamp %}
+                                                <br>{{ reservation.parking_timestamp.split('T')[1][:5] }}
+                                            {% endif %}
+                                        {% else %}
+                                            {{ reservation.parking_timestamp.strftime('%Y-%m-%d') }}
+                                            <br>{{ reservation.parking_timestamp.strftime('%H:%M') }}
+                                        {% endif %}
+                                    {% else %}
+                                        N/A
+                                    {% endif %}
+                                </small>
+                            </td>
+                            <td>
+                                <small class="text-muted">
+                                    {% if reservation.leaving_timestamp %}
+                                        {% if reservation.leaving_timestamp is string %}
+                                            {{ reservation.leaving_timestamp.split('T')[0] if 'T' in reservation.leaving_timestamp else reservation.leaving_timestamp }}
+                                            {% if 'T' in reservation.leaving_timestamp %}
+                                                <br>{{ reservation.leaving_timestamp.split('T')[1][:5] }}
+                                            {% endif %}
+                                        {% else %}
+                                            {{ reservation.leaving_timestamp.strftime('%Y-%m-%d') }}
+                                            <br>{{ reservation.leaving_timestamp.strftime('%H:%M') }}
+                                        {% endif %}
+                                    {% else %}
+                                        -
+                                    {% endif %}
+                                </small>
+                            </td>
+                            <td>
+                                {% if reservation.parking_timestamp and reservation.leaving_timestamp %}
+                                    <small class="text-muted">
+                                        {% if reservation.parking_timestamp is string and reservation.leaving_timestamp is string %}
+                                            {% if 'T' in reservation.parking_timestamp and 'T' in reservation.leaving_timestamp %}
+                                                {% set start = reservation.parking_timestamp.split('T')[0] %}
+                                                {% set end = reservation.leaving_timestamp.split('T')[0] %}
+                                                {% if start == end %}
+                                                    Same day
+                                                {% else %}
+                                                    Multiple days
+                                                {% endif %}
+                                            {% else %}
+                                                -
+                                            {% endif %}
+                                        {% else %}
+                                            Calculated
+                                        {% endif %}
+                                    </small>
+                                {% else %}
+                                    <small class="text-muted">-</small>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if reservation.total_cost and reservation.total_cost >= 0 %}
+                                    <strong class="text-success">₹{{ "%.2f"|format(reservation.total_cost) }}</strong>
+                                {% elif reservation.total_cost and reservation.total_cost < 0 %}
+                                    <strong class="text-danger">₹{{ "%.2f"|format(reservation.total_cost) }}</strong>
+                                    <small class="text-muted d-block">(Error - needs fixing)</small>
+                                {% else %}
+                                    <small class="text-muted">₹{{ "%.2f"|format(reservation.cost_per_unit or 0) }}/hr</small>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="btn-group btn-group-sm">
+                                    <button class="btn btn-outline-primary" onclick="viewDetails({{ reservation.id }})">
+                                        <i class="bi bi-eye"></i>
+                                    </button>
+                                    {% if reservation.status == 'active' %}
+                                    <button class="btn btn-outline-success" onclick="completeReservation({{ reservation.id }})">
+                                        <i class="bi bi-check"></i>
+                                    </button>
+                                    {% endif %}
+                                    <button class="btn btn-outline-danger" onclick="deleteReservation({{ reservation.id }}, '{{ reservation.parking_lot.prime_location_name or 'Unknown Location' }}')">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    {% if not reservations %}
+    <div class="text-center py-5">
+        <div class="text-muted">
+            <i class="bi bi-table" style="font-size: 3rem;"></i>
+            <h4 class="mt-3">No Reservations Found</h4>
+            <p>No parking reservations have been made yet.</p>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<div class="modal fade" id="deleteReservationModal" tabindex="-1" aria-labelledby="deleteReservationModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title" id="deleteReservationModalLabel">
+                    <i class="bi bi-exclamation-triangle me-2"></i>Confirm Delete
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete the reservation for <strong id="reservationLocation"></strong>?</p>
+                <p class="text-muted small mb-0">This action cannot be undone and will remove all associated data.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <a href="#" id="confirmDeleteReservation" class="btn btn-danger">
+                    <i class="bi bi-trash me-2"></i>Delete
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function exportData() {
+    const exportBtn = document.querySelector('button[onclick="exportData()"]');
+    const originalText = exportBtn.innerHTML;
+    exportBtn.innerHTML = '<i class="bi bi-hourglass-split me-2"></i>Exporting...';
+    exportBtn.disabled = true;
+    
+    const link = document.createElement('a');
+    link.href = '/admin/export-reservations';
+    link.download = 'parkit_reservations.csv';
+    link.style.display = 'none';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    setTimeout(function() {
+        exportBtn.innerHTML = '<i class="bi bi-check-circle me-2"></i>Exported!';
+        exportBtn.classList.remove('btn-outline-primary');
+        exportBtn.classList.add('btn-success');
+        
+        setTimeout(function() {
+            exportBtn.innerHTML = originalText;
+            exportBtn.disabled = false;
+            exportBtn.classList.remove('btn-success');
+            exportBtn.classList.add('btn-outline-primary');
+        }, 3000);
+    }, 1000);
+}
+
+function refreshData() {
+    location.reload();
+}
+
+function viewDetails(reservationId) {
+    alert('View details for reservation #' + reservationId);
+}
+
+function completeReservation(reservationId) {
+    if (confirm('Are you sure you want to mark this reservation as completed?')) {
+        alert('Reservation #' + reservationId + ' marked as completed');
+    }
+}
+
+function deleteReservation(reservationId, locationName) {
+    const locationElement = document.getElementById('reservationLocation');
+    const deleteButton = document.getElementById('confirmDeleteReservation');
+    
+    if (locationElement && deleteButton) {
+        locationElement.textContent = locationName;
+        deleteButton.href = '/admin/reservations/delete/' + reservationId;
+        
+        const modalElement = document.getElementById('deleteReservationModal');
+        if (modalElement) {
+            const modal = new bootstrap.Modal(modalElement);
+            modal.show();
+        }
+    }
+}
+
+setInterval(function() {
+    refreshData();
+}, 60000);
+</script>
+{% endblock %}

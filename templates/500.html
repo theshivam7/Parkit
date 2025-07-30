@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+
+{% block title %}Server Error{% endblock %}
+
+{% block content %}
+<div class="container py-5 text-center">
+    <div class="error-content">
+        <h1 class="display-4 text-danger mb-3">500</h1>
+        <h2 class="h4 mb-3">Internal Server Error</h2>
+        <p class="lead mb-4">Oops! Something went wrong on our end.</p>
+        <p class="text-muted mb-4">We're working to fix this issue. Please try again later.</p>
+        <a href="{{ url_for('index') }}" class="btn btn-primary">
+            <i class="fas fa-home me-2" aria-hidden="true"></i>
+            Back to Home
+        </a>
+    </div>
+</div>
+{% endblock %}
