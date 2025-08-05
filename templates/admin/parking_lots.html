@@ -4,22 +4,30 @@
 
 {% block content %}
 <div class="container py-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
         <div>
-            <h2 class="fw-bold mb-1 text-dark">Parking Lots Management</h2>
+            <h1 class="h2 fw-bold mb-1">Parking Lots Management</h1>
             <p class="text-muted mb-0">Manage your parking facilities and monitor occupancy</p>
         </div>
-        <button class="btn btn-primary btn-lg" data-bs-toggle="modal" data-bs-target="#addLotModal">
-            <i class="bi bi-plus-circle me-2"></i>Add New Lot
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addLotModal">
+            <i class="bi bi-plus-circle" aria-hidden="true"></i>Add New Lot
         </button>
     </div>
     
+    {% if not editing %}
+    <form method="GET" class="d-flex gap-2 mb-4" role="search">
+        <input type="search" name="q" value="{{ search_query }}" class="form-control" placeholder="Search by name, address, or PIN code" aria-label="Search parking lots">
+        <button type="submit" class="btn btn-primary"><i class="bi bi-search" aria-hidden="true"></i>Search</button>
+        {% if search_query %}<a href="{{ url_for('admin_parking_lots') }}" class="btn btn-outline-primary">Clear</a>{% endif %}
+    </form>
+    {% endif %}
+
     {% if show_form and editing %}
     <div class="row justify-content-center mb-4">
         <div class="col-lg-8">
             <div class="card border-0 shadow-sm">
-                <div class="card-header bg-primary text-white">
-                    <h5 class="mb-0"><i class="bi bi-pencil-square me-2"></i>Edit Parking Lot</h5>
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-pencil-square me-2" aria-hidden="true"></i>Edit Parking Lot</h5>
                 </div>
                 <div class="card-body">
                     <form method="POST" novalidate>
@@ -77,11 +85,11 @@
                         </div>
                         
                         <div class="d-flex gap-2">
-                            <button type="submit" class="btn btn-primary btn-lg">
-                                <i class="bi bi-check-circle me-2"></i>Update Lot
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-check-circle" aria-hidden="true"></i>Update Lot
                             </button>
-                            <a href="{{ url_for('admin_parking_lots') }}" class="btn btn-secondary btn-lg">
-                                <i class="bi bi-x-circle me-2"></i>Cancel
+                            <a href="{{ url_for('admin_parking_lots') }}" class="btn btn-outline-primary">
+                                <i class="bi bi-x-circle" aria-hidden="true"></i>Cancel
                             </a>
                         </div>
                     </form>
@@ -98,20 +106,26 @@
                 <div class="parking-lot-card h-100 fade-in-up">
                     <div class="parking-lot-header">
                         <div class="d-flex justify-content-between align-items-start">
-                            <div class="flex-grow-1">
+                            <div class="flex-grow-1 me-2 text-break">
                                 <h5 class="mb-1 text-white fw-bold">{{ item.lot.prime_location_name or 'Unnamed Location' }}</h5>
-                                <p class="mb-0 text-white-50 small">
-                                    <i class="bi bi-geo-alt me-1"></i>{{ item.lot.address or 'Address not available' }}
+                                <p class="mb-0 small lot-address">
+                                    <i class="bi bi-geo-alt me-1" aria-hidden="true"></i>{{ item.lot.address or 'Address not available' }}
                                 </p>
                             </div>
                             <div class="dropdown">
-                                <button class="btn btn-outline-light btn-sm" data-bs-toggle="dropdown" aria-expanded="false">
-                                    <i class="bi bi-three-dots-vertical"></i>
+                                <button class="btn btn-outline-light btn-sm" data-bs-toggle="dropdown" aria-expanded="false"
+                                        aria-label="Actions for {{ item.lot.prime_location_name }}" title="Lot actions">
+                                    <i class="bi bi-three-dots-vertical" aria-hidden="true"></i>
                                 </button>
-                                <ul class="dropdown-menu">
+                                <ul class="dropdown-menu dropdown-menu-end">
+                                    <li>
+                                        <a class="dropdown-item" href="{{ url_for('admin_lot_detail', lot_id=item.lot.id) }}">
+                                            <i class="bi bi-grid-3x3-gap me-2" aria-hidden="true"></i>View Spots
+                                        </a>
+                                    </li>
                                     <li>
                                         <a class="dropdown-item" href="{{ url_for('edit_parking_lot', lot_id=item.lot.id) }}">
-                                            <i class="bi bi-pencil me-2"></i>Edit
+                                            <i class="bi bi-pencil me-2" aria-hidden="true"></i>Edit
                                         </a>
                                     </li>
                                     <li>
@@ -119,7 +133,7 @@
                                            data-lot-id="{{ item.lot.id }}" 
                                            data-lot-name="{{ item.lot.prime_location_name or 'Unnamed Location' }}"
                                            onclick="handleDeleteClick(event)">
-                                            <i class="bi bi-trash me-2"></i>Delete
+                                            <i class="bi bi-trash me-2" aria-hidden="true"></i>Delete
                                         </a>
                                     </li>
                                 </ul>
@@ -132,7 +146,7 @@
                             <div class="col-6">
                                 <div class="info-item">
                                     <div class="info-label">Price per Hour</div>
-                                    <div class="info-value text-primary fw-bold">₹{{ item.lot.price or '0' }}</div>
+                                    <div class="info-value text-primary fw-bold">₹{{ "%.2f"|format(item.lot.price or 0) }}</div>
                                 </div>
                             </div>
                             <div class="col-6">
@@ -188,12 +202,12 @@
                     </div>
                     
                     <div class="parking-lot-footer">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <small class="text-muted">
-                                <i class="bi bi-calendar me-1"></i>
+                        <div class="d-flex flex-wrap justify-content-between align-items-center column-gap-1 row-gap-2">
+                            <small class="text-muted text-nowrap">
+                                <i class="bi bi-calendar me-1" aria-hidden="true"></i>
                                 Created: {{ item.lot.created_at.strftime('%Y-%m-%d') if item.lot.created_at else 'N/A' }}
                             </small>
-                            <span class="badge {% if occupancy_rate > 80 %}bg-danger{% elif occupancy_rate > 60 %}bg-warning{% else %}bg-success{% endif %}">
+                            <span class="badge {% if occupancy_rate > 80 %}bg-danger{% elif occupancy_rate > 60 %}bg-warning text-dark{% else %}bg-success{% endif %}">
                                 {% if occupancy_rate > 80 %}High Occupancy
                                 {% elif occupancy_rate > 60 %}Moderate Occupancy
                                 {% else %}Low Occupancy{% endif %}
@@ -203,8 +217,12 @@
                 </div>
             </div>
             {% endfor %}
-        {% else %}
-            
+        {% elif not editing %}
+            <div class="col-12 text-center text-muted py-5">
+                <i class="bi bi-building" style="font-size: 3rem;" aria-hidden="true"></i>
+                <h4 class="mt-3">No Parking Lots Found</h4>
+                <p class="mb-0">{% if search_query %}Nothing matches "{{ search_query }}".{% else %}Add a lot to get started.{% endif %}</p>
+            </div>
         {% endif %}
     </div>
 </div>
@@ -214,11 +232,12 @@
         <div class="modal-content">
             <div class="modal-header bg-primary text-white">
                 <h5 class="modal-title" id="addLotModalLabel">
-                    <i class="bi bi-plus-circle me-2"></i>Add New Parking Lot
+                    <i class="bi bi-plus-circle me-2" aria-hidden="true"></i>Add New Parking Lot
                 </h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <form action="{{ url_for('add_parking_lot') }}" method="POST" novalidate>
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <div class="modal-body">
                     <div class="mb-3">
                         <label class="form-label fw-semibold" for="prime_location_name">Location Name *</label>
@@ -247,11 +266,11 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                        <i class="bi bi-x-circle me-2"></i>Cancel
+                    <button type="button" class="btn btn-outline-primary" data-bs-dismiss="modal">
+                        <i class="bi bi-x-circle" aria-hidden="true"></i>Cancel
                     </button>
-                    <button type="submit" class="btn btn-primary btn-lg">
-                        <i class="bi bi-check-circle me-2"></i>Create Lot
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-check-circle" aria-hidden="true"></i>Create Lot
                     </button>
                 </div>
             </form>
@@ -264,57 +283,42 @@
         <div class="modal-content">
             <div class="modal-header bg-danger text-white">
                 <h5 class="modal-title" id="deleteModalLabel">
-                    <i class="bi bi-exclamation-triangle me-2"></i>Confirm Delete
+                    <i class="bi bi-exclamation-triangle me-2" aria-hidden="true"></i>Confirm Delete
                 </h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
                 <p>Are you sure you want to delete the parking lot <strong id="lotName"></strong>?</p>
-                <p class="text-muted small">This action cannot be undone and will remove all associated parking spots.</p>
+                <p class="text-muted small mb-0">This action cannot be undone and will remove all associated parking spots.</p>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <a href="#" id="confirmDelete" class="btn btn-danger">
-                    <i class="bi bi-trash me-2"></i>Delete
-                </a>
+                <button type="button" class="btn btn-outline-primary" data-bs-dismiss="modal">Cancel</button>
+                <form id="confirmDelete" method="POST" class="d-inline">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit" class="btn btn-danger"><i class="bi bi-trash" aria-hidden="true"></i>Delete</button>
+                </form>
             </div>
         </div>
     </div>
 </div>
 
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    initializeProgressBars();
-});
+<style>
+.lot-address { color: rgba(255, 255, 255, 0.85); }
+.modal-header.bg-primary { background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%) !important; }
+</style>
 
-function initializeProgressBars() {
-    document.querySelectorAll('.progress-bar[data-width]').forEach(function(bar) {
-        const width = parseFloat(bar.getAttribute('data-width')) || 0;
-        bar.style.width = Math.min(100, Math.max(0, width)) + '%';
-    });
-}
+<script>
+document.querySelectorAll('.progress-bar[data-width]').forEach(function(bar) {
+    const width = parseFloat(bar.dataset.width) || 0;
+    bar.style.width = Math.min(100, Math.max(0, width)) + '%';
+});
 
 function handleDeleteClick(event) {
     event.preventDefault();
-    const link = event.target.closest('.dropdown-item.text-danger');
-    
-    if (!link) return;
-    
-    const lotId = link.getAttribute('data-lot-id');
-    const lotName = link.getAttribute('data-lot-name');
-    
-    if (!lotId || !lotName) {
-        console.error('Missing lot ID or name');
-        return;
-    }
-    
-    document.getElementById('lotName').textContent = lotName;
-    
-    const deleteUrl = "{{ url_for('delete_parking_lot', lot_id=1) }}".replace('/1', '/' + lotId);
-    document.getElementById('confirmDelete').href = deleteUrl;
-    
-    const deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
-    deleteModal.show();
+    const link = event.currentTarget;
+    document.getElementById('lotName').textContent = link.dataset.lotName;
+    document.getElementById('confirmDelete').action = "{{ url_for('delete_parking_lot', lot_id=0) }}".replace(/0$/, link.dataset.lotId);
+    new bootstrap.Modal(document.getElementById('deleteModal')).show();
 }
 </script>
 

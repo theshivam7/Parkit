@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+
+{% block title %}{{ lot.prime_location_name }} - Parkit{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+        <div class="text-break">
+            <h1 class="h2 fw-bold mb-1">{{ lot.prime_location_name }}</h1>
+            <p class="text-muted mb-0"><i class="bi bi-geo-alt me-1" aria-hidden="true"></i>{{ lot.address }}, PIN {{ lot.pin_code }}</p>
+        </div>
+        <div class="d-flex flex-wrap gap-2 flex-grow-1 flex-md-grow-0">
+            <a href="{{ url_for('admin_parking_lots') }}" class="btn btn-outline-primary">
+                <i class="bi bi-arrow-left" aria-hidden="true"></i>All Lots
+            </a>
+            <a href="{{ url_for('edit_parking_lot', lot_id=lot.id) }}" class="btn btn-primary">
+                <i class="bi bi-pencil" aria-hidden="true"></i>Edit Lot
+            </a>
+        </div>
+    </div>
+
+    <div class="row g-4 mb-4">
+        <div class="col-lg-3 col-6">
+            <div class="stats-card fade-in-up">
+                <div class="stats-icon primary"><i class="bi bi-p-square" aria-hidden="true"></i></div>
+                <div class="stats-number">{{ stats.total }}</div>
+                <div class="stats-label">Total Spots</div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-6">
+            <div class="stats-card fade-in-up" style="animation-delay: 0.1s;">
+                <div class="stats-icon success"><i class="bi bi-check-circle" aria-hidden="true"></i></div>
+                <div class="stats-number">{{ stats.available }}</div>
+                <div class="stats-label">Available</div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-6">
+            <div class="stats-card fade-in-up" style="animation-delay: 0.2s;">
+                <div class="stats-icon warning"><i class="bi bi-car-front" aria-hidden="true"></i></div>
+                <div class="stats-number">{{ stats.occupied }}</div>
+                <div class="stats-label">Occupied</div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-6">
+            <div class="stats-card fade-in-up" style="animation-delay: 0.3s;">
+                <div class="stats-icon danger"><i class="bi bi-currency-rupee" aria-hidden="true"></i></div>
+                <div class="stats-number">₹{{ "%.2f"|format(lot.price) }}</div>
+                <div class="stats-label">Price per Hour</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card mb-4 fade-in-up" style="animation-delay: 0.4s;">
+        <div class="card-header d-flex flex-wrap justify-content-between align-items-center gap-2">
+            <h5 class="mb-0"><i class="bi bi-grid-3x3-gap me-2" aria-hidden="true"></i>Spots</h5>
+            <div class="d-flex gap-3 small">
+                <span><span class="spot-key spot--free"></span>Available</span>
+                <span><span class="spot-key spot--occupied"></span>Occupied</span>
+            </div>
+        </div>
+        <div class="card-body">
+            {% if lot.parking_spots %}
+            <div class="spot-grid">
+                {% for spot in lot.parking_spots %}
+                    {% set r = active.get(spot.id) %}
+                    <div class="spot {{ 'spot--occupied' if spot.status == 'O' else 'spot--free' }}"
+                         {% if r %}title="{{ r.vehicle_number }} ({{ r.user.name }})"{% endif %}>
+                        {{ spot.spot_number }}
+                    </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p class="text-muted text-center mb-0">This lot has no spots.</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="card fade-in-up" style="animation-delay: 0.5s;">
+        <div class="card-header"><h5 class="mb-0"><i class="bi bi-car-front me-2" aria-hidden="true"></i>Parked Vehicles</h5></div>
+        <div class="card-body p-0">
+            {% if active %}
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead>
+                        <tr><th>Spot</th><th>Vehicle</th><th>User</th><th>Parked Since</th><th>Booked</th></tr>
+                    </thead>
+                    <tbody>
+                        {% for r in active.values()|sort(attribute='parking_spot.spot_number') %}
+                        <tr>
+                            <td><span class="badge bg-warning text-dark">#{{ r.parking_spot.spot_number }}</span></td>
+                            <td><code>{{ r.vehicle_number or '-' }}</code></td>
+                            <td><strong>{{ r.user.name }}</strong><br><small class="text-muted">{{ r.user.email }}</small></td>
+                            <td class="text-nowrap">{{ r.parking_timestamp.strftime('%d %b %Y, %I:%M %p') }}</td>
+                            <td class="text-nowrap">{{ r.booking_duration }} h</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="text-center text-muted py-5">
+                <i class="bi bi-car-front" style="font-size: 2.5rem;" aria-hidden="true"></i>
+                <p class="mt-2 mb-0">No vehicles parked right now.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<style>
+.spot-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(52px, 1fr)); gap: 10px; }
+.spot { border-radius: 10px; padding: 10px 0; text-align: center; font-weight: 700; font-size: 0.9rem; border: 1px solid transparent; }
+.spot--free { background: #d1fae5; color: #065f46; border-color: #a7f3d0; }
+.spot--occupied { background: #fef3c7; color: #92400e; border-color: #fcd34d; cursor: help; }
+.spot-key { display: inline-block; width: 12px; height: 12px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; border: 1px solid #fff; }
+</style>
+{% endblock %}

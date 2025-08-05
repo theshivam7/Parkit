@@ -4,81 +4,86 @@
 
 {% block content %}
 <div class="container py-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
         <div>
-            <h1 class="fw-bold mb-2">Reservations & Statistics</h1>
-            <p class="text-muted mb-0">Comprehensive overview of all parking reservations and system analytics.</p>
+            <h1 class="h2 fw-bold mb-1">Reservations &amp; Statistics</h1>
+            <p class="text-muted mb-0">Overview of all parking reservations and revenue.</p>
         </div>
         <div class="d-flex gap-2">
-            <button class="btn btn-outline-primary" onclick="exportData()">
-                <i class="bi bi-download me-2"></i>Export Data
-            </button>
-            <button class="btn btn-primary" onclick="refreshData()">
-                <i class="bi bi-arrow-clockwise me-2"></i>Refresh
-            </button>
+            <a class="btn btn-outline-primary" href="{{ url_for('export_reservations') }}">
+                <i class="bi bi-download" aria-hidden="true"></i>Export CSV
+            </a>
         </div>
     </div>
 
+    <form method="GET" class="d-flex gap-2 mb-4" role="search">
+        <input type="search" name="q" value="{{ search_query }}" class="form-control" placeholder="Search by vehicle number, user, or lot" aria-label="Search reservations">
+        <button type="submit" class="btn btn-primary"><i class="bi bi-search" aria-hidden="true"></i>Search</button>
+        {% if search_query %}<a href="{{ url_for('admin_reservations') }}" class="btn btn-outline-primary">Clear</a>{% endif %}
+    </form>
+
     <div class="row g-4 mb-4">
-        <div class="col-lg-3 col-md-6">
+        <div class="col-lg-3 col-sm-6">
             <div class="stats-card fade-in-up">
-                <div class="stats-icon primary">
-                    <i class="bi bi-clock"></i>
+                <div class="stats-icon warning">
+                    <i class="bi bi-journal-text" aria-hidden="true"></i>
                 </div>
                 <div class="stats-number">{{ reservations|length }}</div>
                 <div class="stats-label">Total Reservations</div>
             </div>
         </div>
         
-        <div class="col-lg-3 col-md-6">
+        <div class="col-lg-3 col-sm-6">
             <div class="stats-card fade-in-up" style="animation-delay: 0.1s;">
-                <div class="stats-icon success">
-                    <i class="bi bi-check-circle"></i>
+                <div class="stats-icon primary">
+                    <i class="bi bi-check-circle" aria-hidden="true"></i>
                 </div>
                 <div class="stats-number">{{ reservations|selectattr('status', 'equalto', 'completed')|list|length }}</div>
                 <div class="stats-label">Completed</div>
             </div>
         </div>
         
-        <div class="col-lg-3 col-md-6">
+        <div class="col-lg-3 col-sm-6">
             <div class="stats-card fade-in-up" style="animation-delay: 0.2s;">
-                <div class="stats-icon warning">
-                    <i class="bi bi-play-circle"></i>
+                <div class="stats-icon success">
+                    <i class="bi bi-car-front" aria-hidden="true"></i>
                 </div>
                 <div class="stats-number">{{ reservations|selectattr('status', 'equalto', 'active')|list|length }}</div>
                 <div class="stats-label">Active</div>
             </div>
         </div>
         
-        <div class="col-lg-3 col-md-6">
+        <div class="col-lg-3 col-sm-6">
             <div class="stats-card fade-in-up" style="animation-delay: 0.3s;">
                 <div class="stats-icon danger">
-                    <i class="bi bi-currency-dollar"></i>
+                    <i class="bi bi-currency-rupee" aria-hidden="true"></i>
                 </div>
-                <div class="stats-number">₹{{ "%.2f"|format(reservations|selectattr('total_cost')|selectattr('total_cost', 'ge', 0)|sum(attribute='total_cost') or 0) }}</div>
+                <div class="stats-number">₹{{ "%.2f"|format(reservations|selectattr('total_cost')|sum(attribute='total_cost') or 0) }}</div>
                 <div class="stats-label">Total Revenue</div>
             </div>
         </div>
     </div>
 
+    {% if reservations %}
     <div class="card fade-in-up" style="animation-delay: 0.4s;">
         <div class="card-header">
-            <h5 class="mb-0"><i class="bi bi-table me-2"></i>All Reservations</h5>
+            <h5 class="mb-0"><i class="bi bi-table me-2" aria-hidden="true"></i>All Reservations</h5>
         </div>
         <div class="card-body p-0">
             <div class="table-responsive">
-                <table class="table table-hover mb-0">
+                <table class="table table-hover mb-0 res-table">
                     <thead>
                         <tr>
                             <th>User</th>
-                            <th>Parking Lot</th>
-                            <th>Spot</th>
+                            <th class="d-none d-sm-table-cell">Parking Lot</th>
+                            <th class="d-none d-md-table-cell">Spot</th>
+                            <th class="d-none d-md-table-cell">Vehicle</th>
                             <th>Status</th>
-                            <th>Start Time</th>
-                            <th>End Time</th>
-                            <th>Duration</th>
-                            <th>Cost</th>
-                            <th>Actions</th>
+                            <th class="d-none d-lg-table-cell">Start</th>
+                            <th class="d-none d-lg-table-cell">End</th>
+                            <th class="d-none d-xl-table-cell">Duration</th>
+                            <th class="d-none d-sm-table-cell">Cost</th>
+                            <th class="text-end">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -86,33 +91,34 @@
                         <tr>
                             <td>
                                 <div class="d-flex align-items-center">
-                                    <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 32px; height: 32px;">
-                                        <span class="fw-bold text-uppercase">{{ reservation.name[0] if reservation.name else 'U' }}</span>
+                                    <div class="bg-primary text-white rounded-circle d-none d-md-flex align-items-center justify-content-center me-2 flex-shrink-0" style="width: 32px; height: 32px;">
+                                        <span class="fw-bold text-uppercase">{{ reservation.user.name[0] }}</span>
                                     </div>
                                     <div>
-                                        <h6 class="mb-0">{{ reservation.name or 'Unknown' }}</h6>
-                                        <small class="text-muted">{{ reservation.email or 'No email' }}</small>
+                                        <h6 class="mb-0">{{ reservation.user.name }}</h6>
+                                        <small class="text-muted d-none d-xxl-inline">{{ reservation.user.email }}</small>
                                     </div>
                                 </div>
                             </td>
-                            <td>
+                            <td class="d-none d-sm-table-cell">
                                 <strong>{{ reservation.parking_lot.prime_location_name or 'Unknown Lot' }}</strong>
                                 <br>
-                                <small class="text-muted">{{ reservation.parking_lot.address or 'No address' }}</small>
+                                <small class="text-muted">PIN {{ reservation.parking_lot.pin_code }}</small>
                             </td>
-                            <td>
-                                <span class="badge bg-secondary">Spot #{{ reservation.parking_spot.spot_number or 'N/A' }}</span>
+                            <td class="d-none d-md-table-cell">
+                                <span class="badge bg-secondary">#{{ reservation.parking_spot.spot_number or 'N/A' }}</span>
                             </td>
+                            <td class="d-none d-md-table-cell text-nowrap"><code>{{ reservation.vehicle_number or '-' }}</code></td>
                             <td>
                                 {% if reservation.status == 'active' %}
                                     <span class="badge bg-success">Active</span>
                                 {% elif reservation.status == 'completed' %}
                                     <span class="badge bg-primary">Completed</span>
                                 {% else %}
-                                    <span class="badge bg-warning">{{ reservation.status|title }}</span>
+                                    <span class="badge bg-secondary">{{ reservation.status|title }}</span>
                                 {% endif %}
                             </td>
-                            <td>
+                            <td class="d-none d-lg-table-cell text-nowrap">
                                 <small class="text-muted">
                                     {% if reservation.parking_timestamp %}
                                         {% if reservation.parking_timestamp is string %}
@@ -129,7 +135,7 @@
                                     {% endif %}
                                 </small>
                             </td>
-                            <td>
+                            <td class="d-none d-lg-table-cell text-nowrap">
                                 <small class="text-muted">
                                     {% if reservation.leaving_timestamp %}
                                         {% if reservation.leaving_timestamp is string %}
@@ -146,53 +152,25 @@
                                     {% endif %}
                                 </small>
                             </td>
-                            <td>
-                                {% if reservation.parking_timestamp and reservation.leaving_timestamp %}
-                                    <small class="text-muted">
-                                        {% if reservation.parking_timestamp is string and reservation.leaving_timestamp is string %}
-                                            {% if 'T' in reservation.parking_timestamp and 'T' in reservation.leaving_timestamp %}
-                                                {% set start = reservation.parking_timestamp.split('T')[0] %}
-                                                {% set end = reservation.leaving_timestamp.split('T')[0] %}
-                                                {% if start == end %}
-                                                    Same day
-                                                {% else %}
-                                                    Multiple days
-                                                {% endif %}
-                                            {% else %}
-                                                -
-                                            {% endif %}
-                                        {% else %}
-                                            Calculated
-                                        {% endif %}
-                                    </small>
-                                {% else %}
-                                    <small class="text-muted">-</small>
-                                {% endif %}
+                            <td class="d-none d-xl-table-cell text-nowrap">
+                                <small class="text-muted">
+                                    {% if reservation.leaving_timestamp %}{{ reservation.billable_hours() }} h billed{% else %}Booked {{ reservation.booking_duration }} h{% endif %}
+                                </small>
                             </td>
-                            <td>
-                                {% if reservation.total_cost and reservation.total_cost >= 0 %}
+                            <td class="d-none d-sm-table-cell text-nowrap">
+                                {% if reservation.total_cost is not none %}
                                     <strong class="text-success">₹{{ "%.2f"|format(reservation.total_cost) }}</strong>
-                                {% elif reservation.total_cost and reservation.total_cost < 0 %}
-                                    <strong class="text-danger">₹{{ "%.2f"|format(reservation.total_cost) }}</strong>
-                                    <small class="text-muted d-block">(Error - needs fixing)</small>
                                 {% else %}
                                     <small class="text-muted">₹{{ "%.2f"|format(reservation.cost_per_unit or 0) }}/hr</small>
                                 {% endif %}
                             </td>
-                            <td>
-                                <div class="btn-group btn-group-sm">
-                                    <button class="btn btn-outline-primary" onclick="viewDetails({{ reservation.id }})">
-                                        <i class="bi bi-eye"></i>
-                                    </button>
-                                    {% if reservation.status == 'active' %}
-                                    <button class="btn btn-outline-success" onclick="completeReservation({{ reservation.id }})">
-                                        <i class="bi bi-check"></i>
-                                    </button>
-                                    {% endif %}
-                                    <button class="btn btn-outline-danger" onclick="deleteReservation({{ reservation.id }}, '{{ reservation.parking_lot.prime_location_name or 'Unknown Location' }}')">
-                                        <i class="bi bi-trash"></i>
-                                    </button>
-                                </div>
+                            <td class="text-end text-nowrap">
+                                <a class="btn btn-sm btn-outline-primary" href="{{ url_for('admin_lot_detail', lot_id=reservation.lot_id) }}" title="View lot spots" aria-label="View spots in {{ reservation.parking_lot.prime_location_name }}">
+                                    <i class="bi bi-eye" aria-hidden="true"></i>
+                                </a>
+                                <button type="button" class="btn btn-sm btn-outline-danger" data-id="{{ reservation.id }}" data-lot-name="{{ reservation.parking_lot.prime_location_name }}" onclick="deleteReservation(this)" title="Delete reservation" aria-label="Delete reservation {{ reservation.id }}">
+                                    <i class="bi bi-trash" aria-hidden="true"></i>
+                                </button>
                             </td>
                         </tr>
                         {% endfor %}
@@ -202,12 +180,12 @@
         </div>
     </div>
 
-    {% if not reservations %}
+    {% else %}
     <div class="text-center py-5">
         <div class="text-muted">
-            <i class="bi bi-table" style="font-size: 3rem;"></i>
+            <i class="bi bi-journal-text" style="font-size: 3rem;" aria-hidden="true"></i>
             <h4 class="mt-3">No Reservations Found</h4>
-            <p>No parking reservations have been made yet.</p>
+            <p>{% if search_query %}Nothing matches "{{ search_query }}".{% else %}No parking reservations have been made yet.{% endif %}</p>
         </div>
     </div>
     {% endif %}
@@ -218,7 +196,7 @@
         <div class="modal-content">
             <div class="modal-header bg-danger text-white">
                 <h5 class="modal-title" id="deleteReservationModalLabel">
-                    <i class="bi bi-exclamation-triangle me-2"></i>Confirm Delete
+                    <i class="bi bi-exclamation-triangle me-2" aria-hidden="true"></i>Confirm Delete
                 </h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
@@ -227,76 +205,27 @@
                 <p class="text-muted small mb-0">This action cannot be undone and will remove all associated data.</p>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <a href="#" id="confirmDeleteReservation" class="btn btn-danger">
-                    <i class="bi bi-trash me-2"></i>Delete
-                </a>
+                <button type="button" class="btn btn-outline-primary" data-bs-dismiss="modal">Cancel</button>
+                <form id="confirmDeleteReservation" method="POST" class="d-inline">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit" class="btn btn-danger"><i class="bi bi-trash me-2" aria-hidden="true"></i>Delete</button>
+                </form>
             </div>
         </div>
     </div>
 </div>
 
+<style>
+.res-table th, .res-table td { padding: 0.875rem 0.625rem; }
+.res-table th { font-size: 0.75rem; white-space: nowrap; }
+.res-table td h6 { font-size: 0.9rem; }
+</style>
+
 <script>
-function exportData() {
-    const exportBtn = document.querySelector('button[onclick="exportData()"]');
-    const originalText = exportBtn.innerHTML;
-    exportBtn.innerHTML = '<i class="bi bi-hourglass-split me-2"></i>Exporting...';
-    exportBtn.disabled = true;
-    
-    const link = document.createElement('a');
-    link.href = '/admin/export-reservations';
-    link.download = 'parkit_reservations.csv';
-    link.style.display = 'none';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    
-    setTimeout(function() {
-        exportBtn.innerHTML = '<i class="bi bi-check-circle me-2"></i>Exported!';
-        exportBtn.classList.remove('btn-outline-primary');
-        exportBtn.classList.add('btn-success');
-        
-        setTimeout(function() {
-            exportBtn.innerHTML = originalText;
-            exportBtn.disabled = false;
-            exportBtn.classList.remove('btn-success');
-            exportBtn.classList.add('btn-outline-primary');
-        }, 3000);
-    }, 1000);
+function deleteReservation(button) {
+    document.getElementById('reservationLocation').textContent = button.dataset.lotName;
+    document.getElementById('confirmDeleteReservation').action = '/admin/reservations/delete/' + button.dataset.id;
+    new bootstrap.Modal(document.getElementById('deleteReservationModal')).show();
 }
-
-function refreshData() {
-    location.reload();
-}
-
-function viewDetails(reservationId) {
-    alert('View details for reservation #' + reservationId);
-}
-
-function completeReservation(reservationId) {
-    if (confirm('Are you sure you want to mark this reservation as completed?')) {
-        alert('Reservation #' + reservationId + ' marked as completed');
-    }
-}
-
-function deleteReservation(reservationId, locationName) {
-    const locationElement = document.getElementById('reservationLocation');
-    const deleteButton = document.getElementById('confirmDeleteReservation');
-    
-    if (locationElement && deleteButton) {
-        locationElement.textContent = locationName;
-        deleteButton.href = '/admin/reservations/delete/' + reservationId;
-        
-        const modalElement = document.getElementById('deleteReservationModal');
-        if (modalElement) {
-            const modal = new bootstrap.Modal(modalElement);
-            modal.show();
-        }
-    }
-}
-
-setInterval(function() {
-    refreshData();
-}, 60000);
 </script>
 {% endblock %}

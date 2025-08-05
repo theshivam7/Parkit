@@ -4,17 +4,17 @@
 
 {% block content %}
 <div class="container py-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
         <div>
-            <h1 class="fw-bold mb-2">Admin Dashboard</h1>
+            <h1 class="h2 fw-bold mb-1">Admin Dashboard</h1>
             <p class="text-muted mb-0">Welcome back, {{ current_user.name }}! Here's your parking management overview.</p>
         </div>
-        <div class="d-flex gap-2">
-            <a href="{{ url_for('admin_parking_lots') }}" class="btn btn-outline-primary">
-                <i class="bi bi-building me-2"></i>Manage Lots
+        <div class="d-flex flex-wrap gap-2">
+            <a href="{{ url_for('admin_parking_lots') }}" class="btn btn-primary">
+                <i class="bi bi-building" aria-hidden="true"></i>Manage Lots
             </a>
             <a href="{{ url_for('admin_users') }}" class="btn btn-outline-primary">
-                <i class="bi bi-people me-2"></i>View Users
+                <i class="bi bi-people" aria-hidden="true"></i>View Users
             </a>
         </div>
     </div>
@@ -23,7 +23,7 @@
         <div class="col-xl-3 col-md-6">
             <div class="dashboard-stats-card fade-in-up">
                 <div class="dashboard-stats-icon dashboard-stats-icon--primary">
-                    <i class="bi bi-building"></i>
+                    <i class="bi bi-building" aria-hidden="true"></i>
                 </div>
                 <div class="dashboard-stats-number">{{ stats.total_lots }}</div>
                 <div class="dashboard-stats-label">Total Parking Lots</div>
@@ -33,7 +33,7 @@
         <div class="col-xl-3 col-md-6">
             <div class="dashboard-stats-card fade-in-up" style="animation-delay: 0.1s;">
                 <div class="dashboard-stats-icon dashboard-stats-icon--success">
-                    <i class="bi bi-p-square"></i>
+                    <i class="bi bi-p-square" aria-hidden="true"></i>
                 </div>
                 <div class="dashboard-stats-number">{{ stats.total_spots }}</div>
                 <div class="dashboard-stats-label">Total Parking Spots</div>
@@ -43,7 +43,7 @@
         <div class="col-xl-3 col-md-6">
             <div class="dashboard-stats-card fade-in-up" style="animation-delay: 0.2s;">
                 <div class="dashboard-stats-icon dashboard-stats-icon--warning">
-                    <i class="bi bi-car-front"></i>
+                    <i class="bi bi-car-front" aria-hidden="true"></i>
                 </div>
                 <div class="dashboard-stats-number">{{ stats.occupied_spots }}</div>
                 <div class="dashboard-stats-label">Occupied Spots</div>
@@ -53,7 +53,7 @@
         <div class="col-xl-3 col-md-6">
             <div class="dashboard-stats-card fade-in-up" style="animation-delay: 0.3s;">
                 <div class="dashboard-stats-icon dashboard-stats-icon--danger">
-                    <i class="bi bi-currency-dollar"></i>
+                    <i class="bi bi-currency-rupee" aria-hidden="true"></i>
                 </div>
                 <div class="dashboard-stats-number">₹{{ "%.2f"|format(stats.total_revenue) }}</div>
                 <div class="dashboard-stats-label">Total Revenue</div>
@@ -66,7 +66,7 @@
             <div class="dashboard-stats-card fade-in-up" style="animation-delay: 0.4s;">
                 <div class="d-flex align-items-center justify-content-between mb-3">
                     <div class="dashboard-stats-icon dashboard-stats-icon--primary" style="width: 50px; height: 50px; font-size: 1.25rem;">
-                        <i class="bi bi-people"></i>
+                        <i class="bi bi-people" aria-hidden="true"></i>
                     </div>
                     <div class="text-end">
                         <div class="dashboard-stats-number" style="font-size: 2rem;">{{ stats.total_users }}</div>
@@ -74,16 +74,17 @@
                     </div>
                 </div>
                 <div class="progress">
-                    <div class="progress-bar bg-primary" data-width="{{ (stats.total_users / 100) * 100 if stats.total_users else 0 }}"></div>
+                    <div class="progress-bar bg-primary" data-width="{{ (stats.active_reservations / stats.total_users * 100) if stats.total_users else 0 }}"></div>
                 </div>
+                <small class="text-muted d-block mt-2">{{ stats.active_reservations }} parked right now</small>
             </div>
         </div>
         
         <div class="col-md-6">
             <div class="dashboard-stats-card fade-in-up" style="animation-delay: 0.5s;">
                 <div class="d-flex align-items-center justify-content-between mb-3">
-                    <div class="dashboard-stats-icon dashboard-stats-icon--warning" style="width: 50px; height: 50px; font-size: 1.25rem;">
-                        <i class="bi bi-p-square-fill"></i>
+                    <div class="dashboard-stats-icon dashboard-stats-icon--success" style="width: 50px; height: 50px; font-size: 1.25rem;">
+                        <i class="bi bi-p-square-fill" aria-hidden="true"></i>
                     </div>
                     <div class="text-end">
                         <div class="dashboard-stats-number" style="font-size: 2rem;">{{ stats.available_spots }}</div>
@@ -91,8 +92,28 @@
                     </div>
                 </div>
                 <div class="progress">
-                    <div class="progress-bar bg-warning" data-width="{{ (stats.available_spots / stats.total_spots * 100) if stats.total_spots and stats.total_spots > 0 else 0 }}"></div>
+                    <div class="progress-bar bg-success" data-width="{{ (stats.available_spots / stats.total_spots * 100) if stats.total_spots and stats.total_spots > 0 else 0 }}"></div>
                 </div>
+                <small class="text-muted d-block mt-2">{{ stats.available_spots }} of {{ stats.total_spots }} spots free</small>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4 mb-4">
+        <div class="col-lg-5">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-pie-chart me-2" aria-hidden="true"></i>Spot Occupancy</h5>
+                </div>
+                <div class="card-body"><div style="height: 260px;"><canvas id="occupancyChart"></canvas></div></div>
+            </div>
+        </div>
+        <div class="col-lg-7">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-bar-chart me-2" aria-hidden="true"></i>Bookings and Revenue by Lot</h5>
+                </div>
+                <div class="card-body"><div style="height: 260px;"><canvas id="lotChart"></canvas></div></div>
             </div>
         </div>
     </div>
@@ -101,17 +122,17 @@
         <div class="col-12">
             <div class="card fade-in-up" style="animation-delay: 0.6s;">
                 <div class="card-header">
-                    <h5 class="mb-0"><i class="bi bi-graph-up me-2"></i>Quick Actions</h5>
+                    <h5 class="mb-0"><i class="bi bi-lightning-charge me-2" aria-hidden="true"></i>Quick Actions</h5>
                 </div>
                 <div class="card-body">
                     <div class="row g-3">
-                        <div class="col-md-4">
+                        <div class="col-lg-4 col-md-6">
                             <div class="dashboard-quick-action-item">
                                 <div class="d-flex align-items-center">
                                     <div class="dashboard-quick-action-icon dashboard-quick-action-icon--primary">
-                                        <i class="bi bi-building"></i>
+                                        <i class="bi bi-building" aria-hidden="true"></i>
                                     </div>
-                                    <div class="dashboard-quick-action-content">
+                                    <div class="dashboard-quick-action-content me-2">
                                         <h6 class="mb-0">Parking Lots</h6>
                                         <small class="text-muted">Manage facilities</small>
                                     </div>
@@ -120,33 +141,33 @@
                             </div>
                         </div>
                         
-                        <div class="col-md-4">
+                        <div class="col-lg-4 col-md-6">
                             <div class="dashboard-quick-action-item">
                                 <div class="d-flex align-items-center">
                                     <div class="dashboard-quick-action-icon dashboard-quick-action-icon--success">
-                                        <i class="bi bi-people"></i>
+                                        <i class="bi bi-people" aria-hidden="true"></i>
                                     </div>
-                                    <div class="dashboard-quick-action-content">
+                                    <div class="dashboard-quick-action-content me-2">
                                         <h6 class="mb-0">Users</h6>
                                         <small class="text-muted">Manage users</small>
                                     </div>
                                 </div>
-                                <a href="{{ url_for('admin_users') }}" class="btn btn-sm btn-outline-success">View</a>
+                                <a href="{{ url_for('admin_users') }}" class="btn btn-sm btn-outline-primary">View</a>
                             </div>
                         </div>
                         
-                        <div class="col-md-4">
+                        <div class="col-lg-4 col-md-6">
                             <div class="dashboard-quick-action-item">
                                 <div class="d-flex align-items-center">
                                     <div class="dashboard-quick-action-icon dashboard-quick-action-icon--warning">
-                                        <i class="bi bi-graph-up"></i>
+                                        <i class="bi bi-journal-text" aria-hidden="true"></i>
                                     </div>
-                                    <div class="dashboard-quick-action-content">
-                                        <h6 class="mb-0">Reports</h6>
-                                        <small class="text-muted">View analytics</small>
+                                    <div class="dashboard-quick-action-content me-2">
+                                        <h6 class="mb-0">Reservations</h6>
+                                        <small class="text-muted">Bookings and vehicles</small>
                                     </div>
                                 </div>
-                                <a href="{{ url_for('admin_reservations') }}" class="btn btn-sm btn-outline-warning">View</a>
+                                <a href="{{ url_for('admin_reservations') }}" class="btn btn-sm btn-outline-primary">View</a>
                             </div>
                         </div>
                     </div>
@@ -156,75 +177,19 @@
     </div>
 </div>
 
+{% endblock %}
+
+{% block scripts %}
 <script>
-const DashboardStatsUpdater = {
-    init() {
-        this.updateLastUpdated();
-        this.setProgressBarWidths();
-        this.startAutoRefresh();
-    },
-
-    updateLastUpdated() {
-        const now = new Date();
-        const options = { 
-            year: 'numeric', 
-            month: 'long', 
-            day: 'numeric', 
-            hour: '2-digit', 
-            minute: '2-digit' 
-        };
-        const lastUpdatedElement = document.getElementById('last-updated');
-        if (lastUpdatedElement) {
-            lastUpdatedElement.textContent = now.toLocaleDateString('en-US', options);
-        }
-    },
-
-    setProgressBarWidths() {
-        document.querySelectorAll('.progress-bar[data-width]').forEach(bar => {
-            const width = parseFloat(bar.getAttribute('data-width')) || 0;
-            bar.style.width = Math.min(Math.max(width, 0), 100) + '%';
-        });
-    },
-
-    async updateStats() {
-        try {
-            const response = await fetch('/api/stats');
-            if (!response.ok) throw new Error('Failed to fetch stats');
-            
-            const data = await response.json();
-            this.updateStatsDisplay(data);
-            this.setProgressBarWidths();
-            this.updateLastUpdated();
-        } catch (error) {
-            console.error('Error updating stats:', error);
-        }
-    },
-
-    updateStatsDisplay(data) {
-        const statsMapping = [
-            { selector: '.dashboard-stats-number', index: 0, value: data.total_lots },
-            { selector: '.dashboard-stats-number', index: 1, value: data.total_spots },
-            { selector: '.dashboard-stats-number', index: 2, value: data.occupied_spots },
-            { selector: '.dashboard-stats-number', index: 3, value: `₹${parseFloat(data.total_revenue || 0).toFixed(2)}` },
-            { selector: '.dashboard-stats-number', index: 4, value: data.total_users },
-            { selector: '.dashboard-stats-number', index: 5, value: data.available_spots }
-        ];
-
-        document.querySelectorAll('.dashboard-stats-number').forEach((element, index) => {
-            const mapping = statsMapping.find(m => m.index === index);
-            if (mapping) {
-                element.textContent = mapping.value;
-            }
-        });
-    },
-
-    startAutoRefresh() {
-        setInterval(() => this.updateStats(), 30000);
-    }
-};
-
-document.addEventListener('DOMContentLoaded', () => {
-    DashboardStatsUpdater.init();
+document.querySelectorAll('.progress-bar[data-width]').forEach(bar => {
+    bar.style.width = Math.min(Math.max(parseFloat(bar.dataset.width) || 0, 0), 100) + '%';
 });
+
+const chartData = {{ chart_data|tojson }};
+doughnutChart('occupancyChart', ['Occupied', 'Available'], [chartData.occupied, chartData.available], ['#f59e0b', '#10b981']);
+barChart('lotChart', chartData.lots.map(l => l.name), [
+    { label: 'Bookings', data: chartData.lots.map(l => l.bookings), yAxisID: 'y' },
+    { label: 'Revenue (₹)', data: chartData.lots.map(l => l.revenue), yAxisID: 'y1' },
+]);
 </script>
 {% endblock %}
