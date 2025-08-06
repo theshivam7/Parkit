@@ -6,7 +6,7 @@
 <div class="container py-4">
     <header class="row mb-4">
         <div class="col-12">
-            <div class="d-flex justify-content-between align-items-center mb-3">
+            <div class="d-flex flex-wrap gap-3 justify-content-between align-items-center mb-3">
                 <div>
                     <h1 class="fw-bold mb-1 h2">Welcome, {{ current_user.name }}!</h1>
                     <p class="text-muted mb-0">Your personal parking dashboard</p>
@@ -31,7 +31,7 @@
                         Find and reserve a parking spot at your convenience.
                     </p>
                    <a href="{{ url_for('user_booking') }}"
-                   class="btn btn-primary">Book Now </a>
+                   class="btn btn-primary">Book Now</a>
                 </div>
             </div>
         </div>
@@ -51,7 +51,7 @@
                         {% endif %}
                     </p>
                     <a href="{{ url_for('user_current') }}" 
-                       class="btn {% if active_reservation %}btn-warning{% else %}btn-secondary{% endif %}"
+                       class="btn {% if active_reservation %}btn-primary{% else %}btn-outline-primary{% endif %}"
                        aria-label="{% if active_reservation %}View current booking details{% else %}No active booking available{% endif %}">
                         {% if active_reservation %}View Details{% else %}No Booking{% endif %}
                     </a>
@@ -68,7 +68,7 @@
                         View your past reservations and receipts.
                     </p>
                     <a href="{{ url_for('user_history') }}" 
-                       class="btn btn-info"
+                       class="btn btn-primary"
                        aria-label="View parking booking history">
                         View History
                     </a>
@@ -92,13 +92,16 @@
                     <strong>{{ active_reservation.parking_lot.prime_location_name }}</strong>
                     since {{ active_reservation.parking_timestamp.strftime('%I:%M %p') }}.
                 </p>
-                <div class="d-flex gap-2">
-                    <a href="{{ url_for('user_current') }}" class="btn btn-sm btn-warning">
+                <div class="d-flex flex-wrap gap-2">
+                    <a href="{{ url_for('user_current') }}" class="btn btn-sm btn-primary">
                         <i class="bi bi-eye me-1"></i>View Details
                     </a>
-                    <a href="{{ url_for('release_parking') }}" class="btn btn-sm btn-success">
-                        <i class="bi bi-check-circle me-1"></i>Release Parking
-                    </a>
+                    <form action="{{ url_for('release_parking') }}" method="POST" class="d-inline">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Release this parking spot now?')">
+                            <i class="bi bi-stop-circle me-1"></i>Release Parking
+                        </button>
+                    </form>
                 </div>
             </div>
         </div>
@@ -138,5 +141,24 @@
             </div>
         </div>
     </section>
+
+    {% if chart_data %}
+    <section class="card mt-4">
+        <div class="card-header"><h5 class="mb-0"><i class="bi bi-bar-chart me-2"></i>Your Parking Summary</h5></div>
+        <div class="card-body"><div style="height: 260px;"><canvas id="userChart"></canvas></div></div>
+    </section>
+    {% endif %}
 </div>
+{% endblock %}
+
+{% block scripts %}
+{% if chart_data %}
+<script>
+const chartData = {{ chart_data|tojson }};
+barChart('userChart', chartData.map(l => l.name), [
+    { label: 'Bookings', data: chartData.map(l => l.bookings), yAxisID: 'y' },
+    { label: 'Spent (₹)', data: chartData.map(l => l.spent), yAxisID: 'y1' },
+]);
+</script>
+{% endif %}
 {% endblock %}

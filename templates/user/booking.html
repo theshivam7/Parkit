@@ -5,13 +5,18 @@
 {% block content %}
 <div class="container py-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 class="fw-bold">Book Parking Spot</h2>
-        <span class="badge bg-primary fs-6">{{ lots_with_stats|length }} locations available</span>
+        <h2 class="fw-bold mb-0">Book Parking Spot</h2>
+        <span class="badge bg-primary fs-6">{{ lots_with_stats|length }} location{{ 's' if lots_with_stats|length != 1 }}</span>
     </div>
-    <div class="alert alert-info mb-4 shadow-sm">
+    <div class="alert alert-primary mb-4 shadow-sm">
         <i class="bi bi-info-circle me-2"></i>
         Click <b>Book Now</b> to reserve a spot. You will be asked for your name, vehicle number, and booking duration (1-24 hours).
     </div>
+    <form method="GET" class="d-flex flex-wrap gap-2 mb-4" role="search">
+        <input type="search" name="q" value="{{ search_query }}" class="form-control search-input" placeholder="Search by location, address, or PIN code" aria-label="Search parking lots">
+        <button type="submit" class="btn btn-primary"><i class="bi bi-search me-1" aria-hidden="true"></i>Search</button>
+        {% if search_query %}<a href="{{ url_for('user_booking') }}" class="btn btn-outline-primary">Clear</a>{% endif %}
+    </form>
     <div class="row g-4">
         {% for item in lots_with_stats %}
         {% if item and item.lot and item.stats %}
@@ -50,7 +55,15 @@
             </div>
         </div>
         {% endif %}
+        {% else %}
+        <div class="col-12 text-center py-5">
+            <i class="bi bi-{{ 'search' if search_query else 'p-square' }} display-4 text-primary d-block mb-3" aria-hidden="true"></i>
+            <p class="text-muted mb-0">{% if search_query %}No parking lots match "{{ search_query }}".{% else %}No parking lots yet. Please check back later.{% endif %}</p>
+        </div>
         {% endfor %}
     </div>
 </div>
+<style>
+.search-input { flex: 1 1 240px; }
+</style>
 {% endblock %}

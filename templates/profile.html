@@ -5,49 +5,74 @@
 {% block content %}
 <div class="container py-4">
     <div class="row justify-content-center">
-        <div class="col-md-6">
-            <h2 class="fw-bold mb-4">Profile</h2>
-            
-            <form method="POST" novalidate>
-                {{ form.hidden_tag() }}
-                
-                <div class="mb-3">
-                    {{ form.name.label(class="form-label fw-semibold") }}
-                    {{ form.name(class="form-control") }}
-                    {% for error in form.name.errors %}
-                        <div class="text-danger small mt-1">{{ error }}</div>
-                    {% endfor %}
+        <div class="col-md-7 col-lg-6">
+            <div class="card shadow-lg border-0">
+                <div class="card-header text-white text-center">
+                    <h3 class="mb-0"><i class="bi bi-person-circle me-2" aria-hidden="true"></i>Profile</h3>
+                    <small class="opacity-75">Leave the password fields empty to keep your current password</small>
                 </div>
-                
-                <div class="mb-3">
-                    {{ form.email.label(class="form-label fw-semibold") }}
-                    {{ form.email(class="form-control") }}
-                    {% for error in form.email.errors %}
-                        <div class="text-danger small mt-1">{{ error }}</div>
-                    {% endfor %}
+
+                <div class="card-body p-4">
+                    <form method="POST" novalidate>
+                        {{ form.hidden_tag() }}
+
+                        <div class="mb-3">
+                            {{ form.name.label(class="form-label fw-semibold") }}
+                            {{ form.name(class="form-control") }}
+                            {% for error in form.name.errors %}
+                                <div class="text-danger small mt-1">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+
+                        <div class="mb-3">
+                            {{ form.email.label(class="form-label fw-semibold") }}
+                            {{ form.email(class="form-control") }}
+                            {% for error in form.email.errors %}
+                                <div class="text-danger small mt-1">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+
+                        <div class="mb-3">
+                            {{ form.password.label(class="form-label fw-semibold") }}
+                            <div class="password-field">
+                                {{ form.password(class="form-control", placeholder="Enter new password") }}
+                                <button type="button" class="password-toggle" data-toggle-password aria-label="Show password"><i class="bi bi-eye"></i></button>
+                            </div>
+                            {% for error in form.password.errors %}
+                                <div class="text-danger small mt-1">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+
+                        <div class="mb-4">
+                            {{ form.confirm_password.label(class="form-label fw-semibold") }}
+                            <div class="password-field">
+                                {{ form.confirm_password(class="form-control", placeholder="Confirm new password") }}
+                                <button type="button" class="password-toggle" data-toggle-password aria-label="Show password"><i class="bi bi-eye"></i></button>
+                            </div>
+                            {% for error in form.confirm_password.errors %}
+                                <div class="text-danger small mt-1">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary btn-lg">Update Profile</button>
+                        </div>
+                    </form>
                 </div>
-                
-                <div class="mb-3">
-                    {{ form.password.label(class="form-label fw-semibold") }}
-                    {{ form.password(class="form-control", placeholder="Enter new password") }}
-                    {% for error in form.password.errors %}
-                        <div class="text-danger small mt-1">{{ error }}</div>
-                    {% endfor %}
-                </div>
-                
-                <div class="mb-3">
-                    {{ form.confirm_password.label(class="form-label fw-semibold") }}
-                    {{ form.confirm_password(class="form-control", placeholder="Confirm new password") }}
-                    {% for error in form.confirm_password.errors %}
-                        <div class="text-danger small mt-1">{{ error }}</div>
-                    {% endfor %}
-                </div>
-                
-                <div class="d-grid">
-                    <button type="submit" class="btn btn-primary">Update Profile</button>
-                </div>
-            </form>
+            </div>
         </div>
     </div>
 </div>
+
+<style>
+/* Same as auth.css, which base.html does not load */
+.password-field { position: relative; }
+.password-field .form-control { padding-right: 3rem; }
+.password-toggle {
+    position: absolute; top: 50%; right: 0.5rem; transform: translateY(-50%);
+    width: 2.25rem; height: 2.25rem; border: 0; border-radius: 8px;
+    background: transparent; color: #6b7280; font-size: 1.1rem; line-height: 1;
+}
+.password-toggle:hover, .password-toggle:focus-visible { color: #3b82f6; background: #eff6ff; }
+</style>
 {% endblock %}

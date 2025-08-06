@@ -1,15 +1,9 @@
-{# Utility Macros #}
 {% macro get_status_color(status) -%}
     {%- if status == 'active' -%}warning
     {%- elif status == 'completed' -%}success
     {%- else -%}secondary{%- endif -%}
 {%- endmacro %}
 
-{% macro get_status_badge(status) -%}
-    {%- if status == 'active' -%}bg-warning text-dark
-    {%- elif status == 'completed' -%}bg-success
-    {%- else -%}bg-secondary{%- endif -%}
-{%- endmacro %}
 
 {% extends "base.html" %}
 
@@ -19,8 +13,8 @@
 <div class="container py-4">
     <div class="row mb-4">
         <div class="col-12">
-            <h1 class="display-6 fw-light text-dark mb-2">Booking History</h1>
-            <p class="text-dark mb-0" style="color: #495057 !important;">Your parking journey overview</p>
+            <h1 class="h2 fw-bold mb-1">Booking History</h1>
+            <p class="text-muted mb-0">Your parking journey overview</p>
         </div>
     </div>
 
@@ -78,22 +72,14 @@
                         <div class="time-info">
                             <div class="time-item">
                                 <span class="time-label">Parked</span>
-                                {% if reservation.parking_time_formatted %}
-                                    <span class="time-value">{{ reservation.parking_time_formatted }}</span>
-                                    <span class="time-date">{{ reservation.parking_date_formatted }}</span>
-                                {% else %}
-                                    <span class="time-value">Not available</span>
-                                {% endif %}
+                                <span class="time-value">{{ reservation.parking_timestamp.strftime('%I:%M %p') }}</span>
+                                <span class="time-date">{{ reservation.parking_timestamp.strftime('%b %d, %Y') }}</span>
                             </div>
                             <div class="time-item">
                                 {% if reservation.leaving_timestamp %}
                                     <span class="time-label">Released</span>
-                                    {% if reservation.leaving_time_formatted %}
-                                        <span class="time-value">{{ reservation.leaving_time_formatted }}</span>
-                                        <span class="time-date">{{ reservation.leaving_date_formatted }}</span>
-                                    {% else %}
-                                        <span class="time-value">Not available</span>
-                                    {% endif %}
+                                    <span class="time-value">{{ reservation.leaving_timestamp.strftime('%I:%M %p') }}</span>
+                                    <span class="time-date">{{ reservation.leaving_timestamp.strftime('%b %d, %Y') }}</span>
                                 {% else %}
                                     <span class="time-label">Status</span>
                                     <span class="time-value active">Still Parked</span>
@@ -105,12 +91,12 @@
                     <div class="card-footer">
                         <div class="footer-item">
                             <span class="footer-label">Duration</span>
-                            <span class="footer-value">{{ reservation.duration_text or 'Not available' }}</span>
+                            <span class="footer-value">{% if reservation.leaving_timestamp %}{{ reservation.billable_hours() }} h billed (booked {{ reservation.booking_duration }} h){% else %}Ongoing (booked {{ reservation.booking_duration }} h){% endif %}</span>
                         </div>
                         <div class="footer-item">
                             <span class="footer-label">Total</span>
                             <span class="footer-value {{ 'success' if reservation.total_cost else 'warning' }}">
-                                {{ '₹' + reservation.total_cost|string if reservation.total_cost else 'Active' }}
+                                {{ '₹%.2f'|format(reservation.total_cost) if reservation.total_cost is not none else 'Active' }}
                             </span>
                         </div>
                     </div>
@@ -120,11 +106,11 @@
 
     {% else %}
         <div class="empty-state">
-            <div class="empty-icon">📋</div>
+            <i class="bi bi-clock-history empty-icon" aria-hidden="true"></i>
             <h2 class="empty-title">No bookings yet</h2>
             <p class="empty-text">Start your parking journey by making your first reservation</p>
-            <a href="{{ url_for('user_booking') }}" class="empty-button">
-                Book Now
+            <a href="{{ url_for('user_booking') }}" class="btn btn-primary">
+                <i class="bi bi-calendar-plus me-1" aria-hidden="true"></i>Book Now
             </a>
         </div>
     {% endif %}
@@ -163,7 +149,7 @@
 /* Clean Booking Cards */
 .bookings-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(min(350px, 100%), 1fr));
     gap: 1.5rem;
 }
 
@@ -192,14 +178,14 @@
 .location-name {
     font-size: 1.125rem;
     font-weight: 600;
-    color: #212529;
+    color: #fff;
     margin: 0 0 0.5rem 0;
     line-height: 1.3;
 }
 
 .location-address {
     font-size: 0.875rem;
-    color: #495057;
+    color: rgba(255, 255, 255, 0.85);
     margin: 0;
     line-height: 1.4;
 }
@@ -353,9 +339,10 @@
 }
 
 .empty-icon {
+    display: block;
     font-size: 3rem;
     margin-bottom: 1.5rem;
-    opacity: 0.5;
+    color: #3b82f6;
 }
 
 .empty-title {
@@ -372,23 +359,6 @@
     line-height: 1.5;
 }
 
-.empty-button {
-    display: inline-block;
-    padding: 0.75rem 2rem;
-    background: #0d6efd;
-    color: white;
-    text-decoration: none;
-    border-radius: 6px;
-    font-weight: 500;
-    transition: background-color 0.2s ease;
-}
-
-.empty-button:hover {
-    background: #0b5ed7;
-    color: white;
-    text-decoration: none;
-}
-
 /* Responsive Design */
 @media (max-width: 768px) {
     .stats-container {
@@ -396,11 +366,6 @@
     }
     
     .bookings-grid {
-        grid-template-columns: 1fr;
-    }
-    
-    .info-grid,
-    .time-info {
         grid-template-columns: 1fr;
     }
     
