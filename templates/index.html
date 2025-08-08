@@ -133,7 +133,7 @@
     </div>
 </section>
 
-<section class="py-5 bg-light" aria-labelledby="how-it-works-heading">
+<section id="how-it-works" class="py-5 bg-light" aria-labelledby="how-it-works-heading">
     <div class="container">
         <div class="text-center mb-5">
             <h2 id="how-it-works-heading" class="fw-bold mb-3">How It Works</h2>
@@ -219,7 +219,7 @@
 document.addEventListener('DOMContentLoaded', function() {
     'use strict';
     
-    const anchorLinks = document.querySelectorAll('a[href^="#"]');
+    const anchorLinks = document.querySelectorAll('a[href^="#"]:not([href="#"])');
     
     anchorLinks.forEach(function(anchor) {
         anchor.addEventListener('click', function(event) {

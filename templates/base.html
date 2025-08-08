@@ -5,8 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{% block title %}Parkit - Smart Parking Management{% endblock %}</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+    <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='favicon.svg') }}" />
     <style>
         :root {
             --primary-color: #3b82f6;
@@ -52,6 +53,7 @@
         }
 
         .navbar-nav-link {
+            text-decoration: none;
             font-weight: 500;
             color: var(--dark-color) !important;
             padding: 0.5rem 1rem !important;
@@ -71,7 +73,7 @@
             padding: 0.75rem 1.5rem;
             font-weight: 600;
             transition: all 0.2s ease;
-            border: none;
+            border: 2px solid transparent;
         }
 
         .btn-primary {
@@ -235,10 +237,6 @@
                 text-align: center;
             }
 
-            .btn {
-                width: 100%;
-                margin-bottom: 0.5rem;
-            }
         }
     </style>
 </head>
@@ -261,10 +259,10 @@
                     </li>
                     {% if not current_user.is_authenticated %}
                         <li class="nav-item">
-                            <a class="navbar-nav-link" href="#features">Features</a>
+                            <a class="navbar-nav-link" href="{{ url_for('index') }}#features">Features</a>
                         </li>
                         <li class="nav-item">
-                            <a class="navbar-nav-link" href="#how-it-works">How It Works</a>
+                            <a class="navbar-nav-link" href="{{ url_for('index') }}#how-it-works">How It Works</a>
                         </li>
                     {% else %}
                         {% if current_user.role == 'admin' %}
@@ -294,7 +292,7 @@
                             </a>
                             <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
                                 <li>
-                                    <a class="dropdown-item" href="{{ url_for('user_dashboard') }}">
+                                    <a class="dropdown-item" href="{{ url_for('dashboard') }}">
                                         <i class="bi bi-speedometer2 me-2"></i>Dashboard
                                     </a>
                                 </li>
@@ -370,29 +368,30 @@
                     <h5><i class="bi bi-car-front me-2"></i>Parkit</h5>
                     <p>Revolutionizing parking management with smart technology and user-friendly design. Making parking simple, efficient, and stress-free.</p>
                     <div class="d-flex gap-3">
-                         <a href="#" class="text-white"><i class="bi bi-linkedin fs-5"></i></a>
-                        <a href="#" class="text-white"><i class="bi bi-twitter fs-5"></i></a>
+                        <a href="https://github.com/theshivam7/Parkit" class="text-white" aria-label="GitHub"><i class="bi bi-github fs-5"></i></a>
+                        <a href="https://www.linkedin.com/in/theshivam7/" class="text-white" aria-label="LinkedIn"><i class="bi bi-linkedin fs-5"></i></a>
+                        <a href="https://x.com/thexshivam" class="text-white" aria-label="X"><i class="bi bi-twitter-x fs-5"></i></a>
                     </div>
                 </div>
                 <div class="col-lg-2 col-md-6 mb-4">
                     <h6>Quick Links</h6>
                     <ul class="list-unstyled">
                         <li><a href="{{ url_for('index') }}">Home</a></li>
-                        <li><a href="#features">Features</a></li>
+                        <li><a href="{{ url_for('index') }}#features">Features</a></li>
                         <li><a href="{{ url_for('login') }}">Login</a></li>
                     </ul>
                 </div>
                 <div class="col-lg-3 col-md-6 mb-4">
                     <h6>Support</h6>
                     <ul class="list-unstyled">
-                        <li><a href="#">Contact Us</a></li>
-                        <li><a href="#how-it-works">How It Works</a></li>
+                        <li><a href="mailto:22f3002256@ds.study.iitm.ac.in">Contact Us</a></li>
+                        <li><a href="{{ url_for('index') }}#how-it-works">How It Works</a></li>
                     </ul>
                 </div>
                 <div class="col-lg-3 col-md-6 mb-4">
                     <h6>Contact Info</h6>
                     <ul class="list-unstyled">
-                        <li><i class="bi bi-geo-alt me-2"></i>IIT Madras, Chennai – 600036, India</li>
+                        <li><i class="bi bi-geo-alt me-2"></i>IIT Madras, Chennai 600036, India</li>
                         <li><i class="bi bi-envelope me-2"></i>22f3002256@ds.study.iitm.ac.in</li>
                     </ul>
                 </div>
@@ -404,7 +403,9 @@
     </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
     <script src="{{ url_for('static', filename='js/charts.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+    {% block scripts %}{% endblock %}
 </body>
 </html>
