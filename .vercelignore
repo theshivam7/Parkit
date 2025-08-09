@@ -1,0 +1,7 @@
+.venv
+instance
+docs
+__pycache__
+*.db
+.env*
+.vercel
