@@ -111,13 +111,6 @@ Parkit/
 - Input validation and sanitization
 - Role-based access control
 
-## 🎨 UI/UX Features
-
-- **Minimalistic Design**: Clean, modern interface inspired by Apple design
-- **Responsive Layout**: Works seamlessly on desktop and mobile devices
-- **Color Scheme**: Blue (#3b82f6) as primary color
-- **User-Friendly**: Intuitive navigation and clear visual hierarchy
-
 ## 📊 Database Schema
 
 The system uses the following main entities:
@@ -125,18 +118,6 @@ The system uses the following main entities:
 - **ParkingLots**: Parking lot information and pricing
 - **ParkingSpots**: Individual parking spots within lots
 - **Reservations**: Booking records and status
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
-
-## 📝 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ## 👨‍💻 Author
 

@@ -9,6 +9,7 @@ venv/
 env/
 .venv/
 ENV/
+parkit/
 
 # Flask
 instance/
@@ -64,3 +65,7 @@ coverage.xml
 dist/
 build/
 *.egg-info/
+
+# Project specific ignores
+Parkit.zip
+PARKIT - Smart Parking Management System Report.docx
