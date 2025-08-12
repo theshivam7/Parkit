@@ -70,16 +70,6 @@ body.auth-page {
     font-weight: 700;
 }
 
-.auth-brand-icon {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 44px;
-    height: 44px;
-    border-radius: 12px;
-    background: rgba(255, 255, 255, 0.18);
-    font-size: 1.4rem;
-}
 
 .auth-badge {
     display: inline-flex;
@@ -178,8 +168,6 @@ body.auth-page {
 }
 
 .auth-body .invalid-feedback { font-size: 0.8rem; }
-/* Register fills these from JS, so show them whenever they have text */
-.auth-body .invalid-feedback:not(:empty) { display: block; }
 
 .btn-auth {
     display: inline-flex;
@@ -247,72 +235,6 @@ body.auth-page {
     border-radius: var(--auth-radius);
     font-size: 0.9rem;
 }
-
-.password-strength { margin-top: 0.5rem; }
-
-.password-strength-bar {
-    height: 4px;
-    margin-bottom: 0.3rem;
-    border-radius: 2px;
-    background: var(--auth-border);
-    overflow: hidden;
-}
-
-.password-strength-fill {
-    width: 0;
-    height: 100%;
-    transition: width 0.3s, background-color 0.3s;
-}
-
-.password-strength-fill.weak { width: 25%; background: #ef4444; }
-.password-strength-fill.fair { width: 50%; background: #f59e0b; }
-.password-strength-fill.good { width: 75%; background: var(--auth-blue); }
-.password-strength-fill.strong { width: 100%; background: #10b981; }
-
-.password-strength-text {
-    font-size: 0.75rem;
-    font-weight: 500;
-}
-
-.password-requirements {
-    margin-bottom: 1.25rem;
-    padding: 0.8rem 1rem;
-    border-radius: var(--auth-radius);
-    background: #f8fafc;
-    border: 1px solid var(--auth-border);
-}
-
-.password-requirements h2 {
-    display: flex;
-    align-items: center;
-    gap: 0.4rem;
-    margin-bottom: 0.4rem;
-    font-size: 0.85rem;
-    font-weight: 600;
-}
-
-.password-requirements h2 .bi { color: var(--auth-blue); }
-
-.password-requirements ul {
-    margin: 0;
-    padding: 0;
-    list-style: none;
-    color: var(--auth-muted);
-    font-size: 0.8rem;
-}
-
-.password-requirements li { margin-bottom: 0.2rem; }
-
-.password-requirements li::before {
-    content: "\f28a";
-    margin-right: 0.45rem;
-    font-family: bootstrap-icons;
-    font-size: 0.75rem;
-    vertical-align: -0.1em;
-}
-
-.password-requirements li.valid { color: #059669; }
-.password-requirements li.valid::before { content: "\f26a"; }
 
 @media (max-width: 576px) {
     body.auth-page { padding: 4rem 0.75rem 1.5rem; }

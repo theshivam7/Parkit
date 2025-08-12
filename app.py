@@ -2,6 +2,7 @@ import csv
 from datetime import timedelta
 from functools import wraps
 from io import StringIO
+from urllib.parse import urlsplit
 
 from flask import Flask, Response, flash, jsonify, redirect, render_template, request, url_for
 from flask_login import LoginManager, current_user, login_required, login_user, logout_user
@@ -78,6 +79,28 @@ def seed_database():
             ))
         db.session.commit()
 
+    # Drivers parked right now, so the lots and spot maps are not empty
+    lot = ParkingLot.query.order_by(ParkingLot.id).first()
+    if lot and not User.get_by_email('rahul@parkit.com'):
+        now = get_ist_now()
+        spots = [s for i, s in enumerate(lot.parking_spots) if i in (1, 2, 5, 8) and s.status == 'A']
+        for (name, email, vehicle, hours_ago), spot in zip([
+            ('Rahul Verma', 'rahul@parkit.com', 'DL3CAB4521', 1),
+            ('Priya Nair', 'priya@parkit.com', 'HR26DK8830', 2),
+            ('Aman Gupta', 'aman@parkit.com', 'DL8CAF1207', 1),
+            ('Neha Singh', 'neha@parkit.com', 'UP16BT5519', 3),
+        ], spots):
+            if not User.create(name, email, Config.DEMO_PASSWORD):
+                continue
+            driver = User.get_by_email(email)
+            spot.status = 'O'
+            db.session.add(Reservation(
+                user_id=driver.id, lot_id=lot.id, spot_id=spot.id, vehicle_number=vehicle,
+                cost_per_unit=float(lot.price), booking_duration=hours_ago + 1,
+                parking_timestamp=now - timedelta(hours=hours_ago),
+            ))
+        db.session.commit()
+
 
 with app.app_context():
     seed_database()
@@ -118,12 +141,26 @@ def search_lots(q):
 
 
 def is_safe_next(url):
-    return bool(url) and url.startswith('/') and not url.startswith('//')
+    # Browsers drop tabs and newlines and read a backslash as a slash, so /\t/evil.com is off-site
+    if not url or '\\' in url or any(ord(c) < 32 for c in url):
+        return False
+    parts = urlsplit(url)
+    return url.startswith('/') and not url.startswith('//') and not parts.scheme and not parts.netloc
 
 
 @app.route('/')
 def index():
-    return render_template('index.html')
+    return home_page()
+
+
+def home_page(open_auth=None, login_form=None, register_form=None):
+    # Sign in and sign up are a pop-up on the home page; open_auth picks the tab to show.
+    # The hero card shows the first lot's real spot grid.
+    lot = ParkingLot.query.order_by(ParkingLot.id).first()
+    free = ParkingSpot.query.filter_by(status='A').count()
+    return render_template('index.html', lot=lot, total_free=free,
+                           total_lots=ParkingLot.query.count(), open_auth=open_auth,
+                           login_form=login_form, register_form=register_form)
 
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -142,7 +179,7 @@ def login():
             return redirect(url_for('dashboard'))
         flash('Invalid email or password', 'error')
 
-    return render_template('auth/login.html', form=form)
+    return home_page('login', login_form=form)
 
 
 @app.route('/admin/login', methods=['GET', 'POST'])
@@ -176,7 +213,7 @@ def register():
             return redirect(url_for('login'))
         flash('Email already exists', 'error')
 
-    return render_template('auth/register.html', form=form)
+    return home_page('register', register_form=form)
 
 
 @app.route('/logout')

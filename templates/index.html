@@ -5,48 +5,71 @@
 {% block content %}
 <section class="hero-section">
     <div class="container">
-        <div class="row align-items-center">
+        <div class="row align-items-center g-5">
             <div class="col-lg-6 hero-content">
+                <p class="hero-eyebrow"><i class="bi bi-p-square-fill me-2" aria-hidden="true"></i>Parking for 4-wheelers</p>
                 <h1 class="hero-title">
                     Smart Parking<br>
                     <span class="text-warning">Simplified</span>
                 </h1>
                 <p class="hero-subtitle">
-                    Experience hassle-free parking with our intelligent system. 
-                    Reserve, park, and manage spaces effortlessly with real-time 
-                    updates and seamless user experience.
+                    Find a free spot, book it in one click, and pay by the hour when you leave.
                 </p>
                 <div class="d-flex gap-3 flex-wrap">
-                    <a href="{{ url_for('register') }}" class="btn btn-light btn-lg" 
-                       aria-label="Get started with Parkit V1">
+                    {% if current_user.is_authenticated %}
+                    <a href="{{ url_for('dashboard') }}" class="btn btn-light btn-lg">
+                        <i class="bi bi-speedometer2 me-2" aria-hidden="true"></i>Go to dashboard
+                    </a>
+                    {% else %}
+                    <a href="{{ url_for('register') }}" class="btn btn-light btn-lg" data-auth="register">
                         <i class="bi bi-person-plus me-2" aria-hidden="true"></i>Get Started
                     </a>
-                    <a href="#features" class="btn btn-outline-light btn-lg" 
-                       aria-label="Learn more about Parkit V1 features">
-                        <i class="bi bi-play-circle me-2" aria-hidden="true"></i>Learn More
+                    {% endif %}
+                    <a href="#how-it-works" class="btn btn-outline-light btn-lg">
+                        <i class="bi bi-signpost-split me-2" aria-hidden="true"></i>How it works
                     </a>
                 </div>
             </div>
-            <div class="col-lg-6 text-center">
-                <div class="parking-demo p-4">
-                    <div class="card shadow-lg border-0">
-                        <div class="card-body p-4">
-                            <div class="d-flex justify-content-between mb-3">
-                                <span class="badge bg-success">Available</span>
-                                <span class="badge bg-primary">Premium</span>
-                                <span class="badge bg-secondary">Reserved</span>
-                            </div>
-                            <h6 class="card-title text-dark fw-bold">Premium Parking Lot</h6>
-                            <p class="card-text text-muted small">Downtown Location • ₹50/hour</p>
-                            <div class="progress mb-2" style="height: 8px;" role="progressbar" 
-                                 aria-valuenow="60" aria-valuemin="0" aria-valuemax="100" 
-                                 aria-label="Parking lot occupancy">
-                                <div class="progress-bar bg-success" style="width: 60%"></div>
-                            </div>
-                            <small class="text-muted">15 of 25 spots available</small>
+            <div class="col-lg-6">
+                {% if lot %}
+                {% set spots = lot.parking_spots %}
+                {% set free_spots = spots | selectattr('status', 'equalto', 'A') | list %}
+                {% set bays = spots[:10] %}
+                {% set next_free = free_spots[0] if free_spots else None %}
+                <div class="lot-card">
+                    <div class="d-flex justify-content-between align-items-start gap-3">
+                        <div>
+                            <h2 class="lot-card-title">{{ lot.prime_location_name }}</h2>
+                            <p class="lot-card-meta">PIN {{ lot.pin_code }} &middot; &#8377;{{ lot.price|int if lot.price == lot.price|int else '%.2f'|format(lot.price) }}/hour</p>
                         </div>
+                        <span class="lot-live"><span class="lot-live-dot"></span>Live</span>
                     </div>
+
+                    <div class="lot-map" role="img"
+                         aria-label="{{ free_spots | length }} of {{ spots | length }} spots free at {{ lot.prime_location_name }}">
+                        {% for row in ([bays[:5], bays[5:]] if bays|length > 5 else [bays]) %}
+                        <div class="bay-row {{ 'bay-row-bottom' if loop.last }}">
+                            {% for spot in row %}
+                            <div class="bay {{ 'bay-taken' if spot.status == 'O' }} {{ 'bay-next' if next_free and spot.id == next_free.id }}">
+                                <span class="bay-num">{{ spot.spot_number }}</span>
+                                {% if spot.status == 'O' %}<span class="bay-car"></span>{% endif %}
+                                {% if next_free and spot.id == next_free.id %}<span class="bay-p">P</span>{% endif %}
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% if loop.first and not loop.last %}<div class="lot-lane" aria-hidden="true"></div>{% endif %}
+                        {% endfor %}
+                    </div>
+
+                    <div class="lot-card-foot">
+                        <span><strong>{{ free_spots | length }}</strong> of {{ spots | length }} free</span>
+                        {% if next_free %}
+                        <span class="next-chip"><i class="bi bi-p-circle-fill" aria-hidden="true"></i>Next: spot {{ next_free.spot_number }}</span>
+                        {% endif %}
+                    </div>
+                    <p class="lot-card-note">{{ total_free }} free spots across {{ total_lots }} {{ 'lot' if total_lots == 1 else 'lots' }}. The first free spot is assigned when you book.</p>
                 </div>
+                {% endif %}
             </div>
         </div>
     </div>
@@ -56,79 +79,24 @@
     <div class="container">
         <div class="text-center mb-5">
             <h2 id="features-heading" class="fw-bold mb-3">Why Choose Parkit V1?</h2>
-            <p class="text-muted lead">
-                Experience the future of parking management with our comprehensive 
-                suite of features designed for both users and administrators.
-            </p>
+            <p class="text-muted lead">For drivers who want a spot fast, and for admins who run the lots.</p>
         </div>
-        
+
         <div class="row g-4">
+            {% for icon, title, text in [
+                ('bi-broadcast', 'Real-time Status', 'See how many spots are free in every lot before you book.'),
+                ('bi-p-circle', 'Auto-assigned Spots', 'Pick a lot and the first free spot is yours. No hunting around.'),
+                ('bi-bar-chart-line', 'Admin Dashboard', 'Manage lots, see which car is parked where, and track revenue.'),
+                ('bi-clock-history', 'Reservation History', 'Every booking with its time parked and what you paid.'),
+            ] %}
             <div class="col-md-6 col-lg-3">
-                <article class="card h-100 text-center border-0 shadow-sm">
-                    <div class="card-body p-4">
-                        <div class="feature-icon bg-primary text-white rounded-circle d-flex 
-                                    align-items-center justify-content-center mx-auto mb-3" 
-                             style="width: 80px; height: 80px;">
-                            <i class="bi bi-clock-fill fs-2" aria-hidden="true"></i>
-                        </div>
-                        <h3 class="card-title fw-bold h5">Real-time Status</h3>
-                        <p class="card-text text-muted">
-                            See available spots instantly with live updates across all parking locations.
-                        </p>
-                    </div>
+                <article class="feature-card h-100">
+                    <div class="feature-icon"><i class="bi {{ icon }}" aria-hidden="true"></i></div>
+                    <h3 class="h5 fw-bold">{{ title }}</h3>
+                    <p class="text-muted mb-0">{{ text }}</p>
                 </article>
             </div>
-            
-            <div class="col-md-6 col-lg-3">
-                <article class="card h-100 text-center border-0 shadow-sm">
-                    <div class="card-body p-4">
-                        <div class="feature-icon bg-success text-white rounded-circle d-flex 
-                                    align-items-center justify-content-center mx-auto mb-3" 
-                             style="width: 80px; height: 80px;">
-                            <i class="bi bi-geo-alt-fill fs-2" aria-hidden="true"></i>
-                        </div>
-                        <h3 class="card-title fw-bold h5">Auto-assigned Spots</h3>
-                        <p class="card-text text-muted">
-                            No hassle choosing spots. Our system automatically assigns 
-                            the best available space.
-                        </p>
-                    </div>
-                </article>
-            </div>
-            
-            <div class="col-md-6 col-lg-3">
-                <article class="card h-100 text-center border-0 shadow-sm">
-                    <div class="card-body p-4">
-                        <div class="feature-icon bg-warning text-white rounded-circle d-flex 
-                                    align-items-center justify-content-center mx-auto mb-3" 
-                             style="width: 80px; height: 80px;">
-                            <i class="bi bi-bar-chart-fill fs-2" aria-hidden="true"></i>
-                        </div>
-                        <h3 class="card-title fw-bold h5">Admin Dashboard</h3>
-                        <p class="card-text text-muted">
-                            Complete management tools for parking lots, users, 
-                            and comprehensive analytics.
-                        </p>
-                    </div>
-                </article>
-            </div>
-            
-            <div class="col-md-6 col-lg-3">
-                <article class="card h-100 text-center border-0 shadow-sm">
-                    <div class="card-body p-4">
-                        <div class="feature-icon bg-info text-white rounded-circle d-flex 
-                                    align-items-center justify-content-center mx-auto mb-3" 
-                             style="width: 80px; height: 80px;">
-                            <i class="bi bi-person-fill fs-2" aria-hidden="true"></i>
-                        </div>
-                        <h3 class="card-title fw-bold h5">Reservation History</h3>
-                        <p class="card-text text-muted">
-                            Track your parking history, costs, and generate reports 
-                            for your records.
-                        </p>
-                    </div>
-                </article>
-            </div>
+            {% endfor %}
         </div>
     </div>
 </section>
@@ -137,79 +105,45 @@
     <div class="container">
         <div class="text-center mb-5">
             <h2 id="how-it-works-heading" class="fw-bold mb-3">How It Works</h2>
-            <p class="text-muted lead">Get started with Parkit V1 in just three simple steps</p>
+            <p class="text-muted lead">Three steps from sign up to parked.</p>
         </div>
-        
-        <div class="row g-4">
-            <div class="col-md-4">
-                <article class="text-center">
-                    <div class="step-icon bg-primary text-white rounded-circle d-flex 
-                                align-items-center justify-content-center mx-auto mb-3" 
-                         style="width: 80px; height: 80px;">
-                        <span class="fs-2 fw-bold">1</span>
-                    </div>
-                    <h3 class="fw-bold h5">Register & Login</h3>
-                    <p class="text-muted">
-                        Create your account and log in to access our parking management system.
-                    </p>
-                </article>
-            </div>
-            
-            <div class="col-md-4">
-                <article class="text-center">
-                    <div class="step-icon bg-primary text-white rounded-circle d-flex 
-                                align-items-center justify-content-center mx-auto mb-3" 
-                         style="width: 80px; height: 80px;">
-                        <span class="fs-2 fw-bold">2</span>
-                    </div>
-                    <h3 class="fw-bold h5">Choose Parking Lot</h3>
-                    <p class="text-muted">
-                        Browse available parking lots and select the one that suits your needs.
-                    </p>
-                </article>
-            </div>
-            
-            <div class="col-md-4">
-                <article class="text-center">
-                    <div class="step-icon bg-primary text-white rounded-circle d-flex 
-                                align-items-center justify-content-center mx-auto mb-3" 
-                         style="width: 80px; height: 80px;">
-                        <span class="fs-2 fw-bold">3</span>
-                    </div>
-                    <h3 class="fw-bold h5">Park & Pay</h3>
-                    <p class="text-muted">
-                        Get assigned a spot automatically, park your vehicle, 
-                        and pay when you leave.
-                    </p>
-                </article>
-            </div>
-        </div>
+
+        <ol class="row g-4 steps list-unstyled mb-0">
+            {% for title, text in [
+                ('Create an account', 'Sign up with your email. It takes a minute.'),
+                ('Choose a lot', 'Compare free spots and hourly prices, then book.'),
+                ('Park and pay', 'Release the spot when you leave and pay for the hours used.'),
+            ] %}
+            <li class="col-md-4 step">
+                <span class="step-num" aria-hidden="true">{{ loop.index }}</span>
+                <h3 class="fw-bold h5">{{ title }}</h3>
+                <p class="text-muted mb-0">{{ text }}</p>
+            </li>
+            {% endfor %}
+        </ol>
     </div>
 </section>
 
 <section class="py-5" aria-labelledby="cta-heading">
     <div class="container">
-        <div class="row justify-content-center">
-            <div class="col-lg-8 text-center">
-                <div class="card border-0 shadow-lg">
-                    <div class="card-body p-5">
-                        <h2 id="cta-heading" class="fw-bold mb-3">Ready to Get Started?</h2>
-                        <p class="text-muted mb-4">
-                            Join thousands of users who have already simplified their 
-                            parking experience with Parkit V1.
-                        </p>
-                        <div class="d-flex gap-3 justify-content-center flex-wrap">
-                            <a href="{{ url_for('register') }}" class="btn btn-primary btn-lg" 
-                               aria-label="Sign up for a new account">
-                                <i class="bi bi-person-plus me-2" aria-hidden="true"></i>Sign Up Now
-                            </a>
-                            <a href="{{ url_for('login') }}" class="btn btn-outline-primary btn-lg" 
-                               aria-label="Login to existing account">
-                                <i class="bi bi-box-arrow-in-right me-2" aria-hidden="true"></i>Login
-                            </a>
-                        </div>
-                    </div>
-                </div>
+        <div class="cta-panel">
+            <div>
+                <h2 id="cta-heading" class="fw-bold mb-2">Ready to park?</h2>
+                <p class="mb-0">Create a free account and book your first spot in under a minute.</p>
+            </div>
+            <div class="d-flex gap-3 flex-wrap">
+                {% if current_user.is_authenticated %}
+                <a href="{{ url_for('dashboard') }}" class="btn btn-light btn-lg">
+                    <i class="bi bi-speedometer2 me-2" aria-hidden="true"></i>Go to dashboard
+                </a>
+                {% else %}
+                <a href="{{ url_for('register') }}" class="btn btn-light btn-lg" data-auth="register">
+                    <i class="bi bi-person-plus me-2" aria-hidden="true"></i>Sign Up Now
+                </a>
+                <a href="{{ url_for('login') }}" class="btn btn-outline-light btn-lg" data-auth="login">
+                    <i class="bi bi-box-arrow-in-right me-2" aria-hidden="true"></i>Login
+                </a>
+                {% endif %}
             </div>
         </div>
     </div>
