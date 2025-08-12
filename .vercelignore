@@ -1,6 +1,6 @@
 .venv
 instance
-docs
+static/assets/brag.*
 __pycache__
 *.db
 .env*

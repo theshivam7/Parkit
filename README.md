@@ -1,9 +1,10 @@
-<h1 align="center">Parkit</h1>
+<p align="center"><img src="static/assets/favicon.svg" alt="Parkit V1 logo" width="72"></p>
+
+<h1 align="center">Parkit V1</h1>
 
 <p align="center">A vehicle parking app for 4-wheelers. Drivers book a spot in a parking lot and pay by the hour. An admin manages the lots and sees which car is parked where.</p>
 
 **Live demo:** https://parkitapp.vercel.app
-**Source:** https://github.com/theshivam7/Parkit
 
 | | |
 |---|---|
@@ -14,6 +15,8 @@
 | Project guidelines | [MAD I project document](https://docs.google.com/document/u/3/d/e/2PACX-1vQXZXcz4tZukKB1SY1YgFBwQsc_gAgfr822JmzvhJMnOC-kc1mXzyguVmWoOtXpykO1spBO8VHsEVap/pub) |
 | Grade | B |
 
+The V2 of this app, built for MAD II with a Flask API, Vue, Redis and Celery, is [Parkit V2](https://github.com/theshivam7/ParkitOne).
+
 ## Demo logins
 
 | Role | Email | Password |
@@ -21,9 +24,9 @@
 | Admin | `admin@parkit.com` | `admin@123` |
 | User | `demo@parkit.com` | `demo1234` |
 
-## Screenshot
+## Demo
 
-![Parkit home page](docs/screenshots/home.png)
+<p align="center"><a href="static/assets/brag.mp4"><img src="static/assets/brag.gif" alt="Parkit V1 demo"></a></p>
 
 ## Features
 
@@ -61,9 +64,7 @@ Open http://127.0.0.1:5001. The first run creates `instance/database.db` with th
 
 ## Deploy on Vercel
 
-Import the repo in Vercel (it finds the Flask `app` in `app.py`) and deploy. Set a `SECRET_KEY` environment variable.
-
-The course requires SQLite, and Vercel can only write to `/tmp`, which resets now and then. So the live demo returns to the demo data from time to time.
+Import the repo in Vercel and set a `SECRET_KEY` environment variable. SQLite lives in `/tmp` there.
 
 ## JSON API
 
@@ -74,4 +75,4 @@ The course requires SQLite, and Vercel can only write to `/tmp`, which resets no
 
 ## Author
 
-[Shivam Sharma](https://www.linkedin.com/in/theshivam7/)
+Built by [Shivam Sharma](https://www.linkedin.com/in/theshivam7/), a student in the IIT Madras BS in Data Science program. Parkit V1 is my project for [Modern Application Development I](https://study.iitm.ac.in/ds/course_pages/BSCS2003.html), one of the courses for the Diploma in Programming.
